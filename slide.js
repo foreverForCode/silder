@@ -122,12 +122,14 @@ Slide.prototype = {
         if (that.index >= that.allLiDOM.length / 2) {
             tempIndex = 0;
         }
-        // that.showBtn(tempIndex)
+        that.showBtn(tempIndex)
     },
-    stop: function () {
-        var me = this;
-        
-    },
-
-
+    showBtn:function(idx){
+        var that = this;
+        var childNode = that.pageDOM.querySelectorAll('span');
+        [].slice.call(childNode,0).forEach(function(item){
+            item.style.backgroundColor="blue";
+        });
+        childNode[idx].style.backgroundColor = "red";
+    }
 }
