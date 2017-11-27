@@ -47,144 +47,185 @@
         });
 
     }
-    var $Q = function(select,context){
+    // 获取节点
+    var $Q = function (select, context) {
         context = context || document;
         return context.querySelectorAll(select);
     }
+    // 对象合并
+    var extend = function (target, source) {
+        return Object.assign(JSON.parse(JSON.stringify(target)), source)
+    }
 
-    var Slide = function(options){};
-    Slide.prototype = {};
+    var Slide = function (options) {
+        var defaultOpts = {
+            isLoop: true,             // 是否循环播放
+            showPage: false,          // 是否显示显示导航栏
+            wrap: '',                 // 大盒子
+            ulDOM: '',                // 图片Ul
+            allLiDOM: null,           // 图片列表
+            navDOM: '',               // 导航Ul
+            index: 1,                 
+            timer: null,
+            duration: 2000 // 间隔时间
+        };
+        this.opts = extend(defaultOpts, options || {});
+        this.wrap = $Q(this.opts.wrap)[0];
+        this.ulDOM = $Q(this.opts.ulDOM, this.wrap)[0];
+        this.allLiDOM = $Q('li', this.ulDOM);
+        this.navDOM = $Q(this.opts.navDOM, this.wrap)[0];
+        this.imgWidth = this.wrap.offsetWidth;
+        this.navDots = $Q('li', this.navDOM);
+        this.index = this.opts.index;
+        this.timer = this.opts.timer;
+        this.startX = 0;
+        this.moveX = 0;
+        this.distanceX = 0;
+        this.isMove = false;
+        this.init();
+    };
+    Slide.prototype = {
+        init: function () {
+            var that = this,
+                opts = that.opts;
+            if (opts.isLoop) {
+                that.autoplay()
+            };
 
-    var slide = function(options){
+            that.ulDOM.addEventListener('touchstart', function (e) {
+                that.touchstart(e)
+            }, false);
+            that.ulDOM.addEventListener('touchmove', function (e) {
+                that.touchmove(e)
+            }, false);
+            window.addEventListener('touchend', function (e) {
+                that.touchend(e)
+            }, false);
+            if(!that.opts.showPage){
+                that.navDOM.style.display="none";
+            }
+        },
+        // 重置参数
+        reset: function () {
+            var that = this,
+                opts = that.opts;
+
+            that.startX = 0;
+            that.moveX = 0;
+            that.distanceX = 0;
+            that.isMove = false;
+
+        },
+        // 添加过渡函数
+        addTransition: function () {
+            var that = this,
+                opts = that.opts;
+            that.ulDOM.style.transition = "all 0.3s";
+            that.ulDOM.style.webkitTransition = "all 0.3s"; /*做兼容*/
+        },
+        // 移除过渡函数
+        removeTransition: function () {
+            var that = this,
+                opts = that.opts;
+            that.ulDOM.style.transition = "none";
+            that.ulDOM.style.webkitTransition = "none"; /*做兼容*/
+        },
+        // 定位translateX的值
+        setTranslateX: function (translatex) {
+            var that = this,
+                opts = that.opts;
+            that.ulDOM.style.transform = "translateX(" + translatex + "px)";
+            that.ulDOM.style.webkitTransition = "translateX(" + translatex + "px)"
+        },
+        // autoPlay
+        autoplay: function () {
+            var that = this;
+            opts = that.opts;
+            that.index = 1;
+            that.timer = setInterval(function () {
+                that.index++;
+                that.addTransition();
+                that.setTranslateX(-that.index * that.imgWidth)
+            }, opts.duration);
+
+            transitionEnd(that.ulDOM, function () {
+                if (that.index > that.allLiDOM.length - 2) {
+                    that.index = 1
+                } else if (that.index <= 0) {
+                    that.index = that.allLiDOM.length - 2
+                };
+                that.removeTransition(); //清除过渡
+                that.setTranslateX(-that.index*that.imgWidth)
+                that.switchNav();
+            })
+        },
+        // 导航状态切换
+        switchNav: function () {
+            var that = this,
+                opts = that.opts;
+            that.navDots.forEach(function (item) {
+                item.className = "";
+            });
+
+            that.navDots[that.index - 1].className = "now"
+        },
+        // touch
+        touchstart: function (e) {
+            var that = this,
+                opts = that.opts;
+            clearInterval(that.timer);
+            that.startX = e.touches[0].clientX;
+        },
+        touchmove: function (e) {
+            var that = this,
+                opts = that.opts;
+            that.moveX = e.touches[0].clientX; //滑动时候的X
+            that.distanceX = that.moveX - that.startX; //计算移动的距离
+
+            that.removeTransition(); //清除过渡
+            that.setTranslateX(-that.index * that.imgWidth + that.distanceX); //实时的定位
+            that.isMove = true; //证明滑动过
+        },
+        touchend: function (e) {
+            var that = this,
+                opts = that.opts;
+            // 滑动超过 1/3 即为滑动有效，否则即为无效，则吸附回去
+            if (that.isMove && Math.abs(that.distanceX) > that.imgWidth / 3) {
+                //5.当滑动超过了一定的距离  需要 跳到 下一张或者上一张  （滑动的方向）*/
+                if (that.distanceX > 0) { //上一张
+                    that.index--;
+                } else { //下一张
+                    that.index++;
+                }
+            }
+            that.addTransition(); //加过渡动画
+            that.setTranslateX(-that.index * that.imgWidth); //定位
+
+            that.reset();
+            //加定时器
+            clearInterval(that.timer); //严谨 再清除一次定时器
+            if (that.opts.isLoop) {
+                that.timer = setInterval(function () {
+                    that.index++; //自动轮播到下一张
+                    that.addTransition(); //加过渡动画
+                    that.setTranslateX(-that.index * that.imgWidth); //定位
+                }, that.opts.duration);
+            }
+
+            transitionEnd(that.ulDOM, function () {
+                if (that.index > that.allLiDOM.length - 2) {
+                    that.index = 1
+                } else if (that.index <= 0) {
+                    that.index = that.allLiDOM.length - 2
+                };
+                that.switchNav();
+            })
+        }
+    };
+
+    var slide = function (options) {
         return new Slide(options)
     };
 
     window.slide = slide;
 })(window)
-/**
- * Created by libo on 2017/11/9.
- */
-window.onload = function () {
-    /*
-     * 1.自动轮播  定时器  无缝衔接  动画结束瞬间定位
-     * 2.点需要随着轮播的滚动改变对应的点  改变当前样式  当前图片的索引
-     * 3.手指滑动的时候让轮播图滑动   touch事件  记录坐标轴的改变 改变轮播图的定位（位移css3）
-     * 4.当滑动的距离不超过一定的距离的时候  需要吸附回去  过渡的形式去做
-     * 5.当滑动超过了一定的距离  需要 跳到 下一张或者上一张  （滑动的方向） 一定的距离（屏幕的三分之一）
-     * */
-
-    //轮播图大盒子
-    var banner = document.querySelector('.banner');
-    //图片的宽度
-    var width = banner.offsetWidth;
-    //图片盒子
-    var imageBox = banner.querySelector('ul:first-child');
-    //点盒子
-    var pointBox = banner.querySelector('ul:last-child');
-    //所有的点
-    var points = pointBox.querySelectorAll('li');
-
-    //公用方法
-    //加过渡
-    var addTransition = function () {
-        imageBox.style.transition = "all 0.3s";
-        imageBox.style.webkitTransition = "all 0.3s"; /*做兼容*/
-    };
-    //清除过渡
-    var removeTransition = function () {
-        imageBox.style.transition = "none";
-        imageBox.style.webkitTransition = "none";
-    }
-    //定位
-    var setTranslateX = function (translateX) {
-        imageBox.style.transform = "translateX(" + translateX + "px)";
-        imageBox.style.webkitTransform = "translateX(" + translateX + "px)";
-    }
-
-    //功能实现
-    //自动轮播  定时器  无缝衔接  动画结束瞬间定位
-    var index = 1;
-    var timer = setInterval(function () {
-        index++; //自动轮播到下一张
-        //改变定位  动画的形式去改变  transition transform translate
-        addTransition(); //加过渡动画
-        setTranslateX(-index * width); //定位
-    }, 2000);
-
-    //等过渡结束之后来做无缝衔接
-    my.transitionEnd(imageBox, function () {
-        //处理事件结束后的业务逻辑
-        if (index > 5) {
-            index = 1;
-        } else if (index <= 0) {
-            index = 5;
-        }
-        removeTransition(); //清除过渡
-        setTranslateX(-index * width); //定位
-        setPoint(); //设置底部显示当前图片对应的圆角
-    });
-
-    //改变当前样式  当前图片的索引
-    var setPoint = function () {
-        //清除上一次的now
-        for (var i = 0; i < points.length; i++) {
-            points[i].className = " ";
-        }
-        //给图片对应的点加上样式
-        points[index - 1].className = "now";
-    }
-
-    /*
-     手指滑动的时候让轮播图滑动   touch事件  记录坐标轴的改变 改变轮播图的定位（位移css3）
-     当滑动的距离不超过一定的距离的时候  需要吸附回去  过渡的形式去做
-     当滑动超过了一定的距离  需要 跳到 下一张或者上一张  （滑动的方向） 一定的距离（屏幕的三分之一）
-     */
-    //touch事件
-    var startX = 0; //记录起始  刚刚触摸的点的位置 x的坐标
-    var moveX = 0; //滑动的时候x的位置
-    var distanceX = 0; //滑动的距离
-    var isMove = false; //是否滑动过
-
-    imageBox.addEventListener('touchstart', function (e) {
-        clearInterval(timer); //清除定时器
-        startX = e.touches[0].clientX; //记录起始X
-    });
-
-    imageBox.addEventListener('touchmove', function (e) {
-        moveX = e.touches[0].clientX; //滑动时候的X
-        distanceX = moveX - startX; //计算移动的距离
-        console.log(distanceX);
-        //计算当前定位  -index*width+distanceX
-        removeTransition(); //清除过渡
-        setTranslateX(-index * width + distanceX); //实时的定位
-        isMove = true; //证明滑动过
-    });
-
-    //在模拟器上模拟的滑动会有问题 丢失的情况  最后在模拟器的时候用window
-    window.addEventListener('touchend', function (e) {
-        // 滑动超过 1/3 即为滑动有效，否则即为无效，则吸附回去
-        if (isMove && Math.abs(distanceX) > width / 3) {
-            //5.当滑动超过了一定的距离  需要 跳到 下一张或者上一张  （滑动的方向）*/
-            if (distanceX > 0) { //上一张
-                index--;
-            } else { //下一张
-                index++;
-            }
-        }
-        addTransition(); //加过渡动画
-        setTranslateX(-index * width); //定位
-
-        //重置参数
-        startX = 0;
-        moveX = 0;
-        distanceX = 0;
-        isMove = false;
-        //加定时器
-        clearInterval(timer); //严谨 再清除一次定时器
-        timer = setInterval(function () {
-            index++; //自动轮播到下一张
-            addTransition(); //加过渡动画
-            setTranslateX(-index * width); //定位
-        }, 2000);
-    });
-};

@@ -10,7 +10,7 @@
 <body>
 <div class="layout">
     <div class="banner">
-        <ul class="clearfix">
+        <ul class="clearfix imglist">
             <li><a href="#"><img src="./images/15.jpg"></a></li>
             <li><a href="#"><img src="./images/11.jpg"></a></li>
             <li><a href="#"><img src="./images/12.jpg"></a></li>
@@ -19,7 +19,7 @@
             <li><a href="#"><img src="./images/15.jpg"></a></li>
             <li><a href="#"><img src="./images/11.jpg"></a></li>
         </ul>
-        <ul>
+        <ul class="navlist">
             <li class="now"></li>
             <li></li>
             <li></li>
@@ -31,5 +31,16 @@
 
 <script src="./base.js"></script>
 <script src="./slideshow.js"></script>
+<script>
+    window.onload=function(){
+        slide({
+            wrap: '.banner',
+            ulDOM: '.imglist',
+            navDOM: '.navlist',
+            isLoop:true,
+            showPage:true 
+        })
+    }
+</script>
 </body>
 </html>
