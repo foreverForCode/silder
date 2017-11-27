@@ -1,5 +1,5 @@
 ;
-(function (win) {
+(function (window) {
 
     /*封装一个事件 过渡结束事件*/
     var transitionEnd = function (dom, callback) {
@@ -34,7 +34,7 @@
         dom.addEventListener('touchmove', function () {
             isMove = true;
         });
-        window.addEventListener('touchend', function (e) {
+        win.addEventListener('touchend', function (e) {
             //1.没有滑动过
             //2.响应事件在150ms以内   要求比click要响应快
             if (!isMove && (Date.now() - time) < 150) {
