@@ -17,8 +17,8 @@ function Slide(options) {
     this.opts = Object.assign(defaultOpts, options);
     this.wrap = this.opts.wrap || document.body;
     this.wrap.style.height = this.opts.wrapHeight;
-    this.ulDOM = this.opts.ulDOM,
-        this.allLiDOM = this.opts.allLiDOM;
+    this.ulDOM = this.opts.ulDOM;
+    this.allLiDOM = this.opts.allLiDOM;
     this.pageDOM = this.opts.pageDOM;
     this.content = this.opts.content;
     this.wrapWidth = 0;
@@ -31,6 +31,11 @@ function Slide(options) {
 };
 
 Slide.prototype = {
+    /**
+     * 初始入口
+     * 功能：1.自主渲染内容页面 2. 给页面添加动态效果 3. 启动延迟函数 
+     * 
+    */
     init: function () {
         var that = this;
         that.renderHtml(that.content);
@@ -105,11 +110,11 @@ Slide.prototype = {
                     me.ulDOM.style.transform = "translateX(0px)";
                 };
                 me.delay = setTimeout(me.move(me), me.opts.timer);
-                return;//神级return 因为有return的存在，避免了回退 
+                return; //神级return 因为有return的存在，避免了回退 
             };
-            var diff = current+speed;
-            var temps = "translateX(" +diff + "px)";
-            console.log(temps,'temps')
+            var diff = current + speed;
+            var temps = "translateX(" + diff + "px)";
+            console.log(temps, 'temps')
             me.ulDOM.style.transform = temps;
         }, 60)
     },
@@ -124,11 +129,11 @@ Slide.prototype = {
         }
         that.showBtn(tempIndex)
     },
-    showBtn:function(idx){
+    showBtn: function (idx) {
         var that = this;
         var childNode = that.pageDOM.querySelectorAll('span');
-        [].slice.call(childNode,0).forEach(function(item){
-            item.style.backgroundColor="blue";
+        [].slice.call(childNode, 0).forEach(function (item) {
+            item.style.backgroundColor = "blue";
         });
         childNode[idx].style.backgroundColor = "red";
     }
