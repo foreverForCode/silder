@@ -2,51 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <link rel="stylesheet" href="./reset.css">
-    <link rel="stylesheet" href="./slide.css">
-    <script src="./slide.js"></script>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>移动端-轮播图</title>
+    <link rel="stylesheet" href="./index.css">
 </head>
 <body>
-    <div id="slide">
-        <!-- <div class="bd">
-            <ul>
-                <li></li>
-                <li></li>
-                <li></li>
-            </ul>
-        </div>
-        <ul class="hd">
-            
-        </ul> -->
+<div class="layout">
+    <div class="banner">
+        <ul class="clearfix">
+            <li><a href="#"><img src="./images/15.jpg"></a></li>
+            <li><a href="#"><img src="./images/11.jpg"></a></li>
+            <li><a href="#"><img src="./images/12.jpg"></a></li>
+            <li><a href="#"><img src="./images/13.jpg"></a></li>
+            <li><a href="#"><img src="./images/14.jpg"></a></li>
+            <li><a href="#"><img src="./images/15.jpg"></a></li>
+            <li><a href="#"><img src="./images/11.jpg"></a></li>
+        </ul>
+        <ul>
+            <li class="now"></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
     </div>
+</div>
+
+<script src="./base.js"></script>
+<script src="./slideshow.js"></script>
 </body>
-<script>
-
-    window.onload = function(){
-        // picList
-        var picList = [
-            {
-                src:'./images/1.jpg'
-            },
-            {
-                src:'./images/2.jpg'
-            },
-            {
-                src:'./images/3.jpg'
-            },
-            {
-                src:'./images/4.jpg'
-            }
-        ];
-        slide({
-            wrap:document.getElementById('slide'),
-            wrapHeight:"180px",
-            content:picList,
-
-        })
-    }
-</script>
 </html>
