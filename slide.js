@@ -3,26 +3,35 @@
  * author:jorden
  * startDate:2017-11-24 11:35
  * */
-;(function (win) {
+;
+(function (win) {
     var $Q = function (select, context) {
         var context = context || document;
         return context.querySelectorAll(select);
+    };
+    //返回角度  
+    var GetSlideAngle = function (dx, dy) {
+        return Math.atan2(dy, dx) * 180 / Math.PI;
     }
+    var isTouchPad = /hp-tablet/gi.test(navigator.appVersion);
+    var hasTouch = "ontouchstart" in window && !isTouchPad;
 
     function Slide(options) {
         var defaultOpts = {
             pagenation: true,
+            autoplay: false,
             ulDOM: null,
             allLiDOM: null,
             pageDOM: null,
-            timer: 3000,
-            index: 0,
-            isMoving: false
+            timer: null,
+            index: 1,
         }
         this.opts = Object.assign(defaultOpts, options);
         this.wrap = this.opts.wrap || document.body;
-
-        
+        this.wrap.style.height = this.opts.wrapHeight;
+        this.startX = 0;
+        this.startY = 0;
+        this.initX = 0;
         this.init();
 
     };
@@ -38,6 +47,19 @@
                 opts = me.opts;
             me.renderHtml(opts.content);
             me.setting();
+            me.showBtn(opts.index);
+            if (opts.autoplay) {
+                me.loop();
+            };
+            me.ulDOM.addEventListener('touchstart', function (e) {
+                me.touchstart(e)
+            }, false);
+            me.ulDOM.addEventListener('touchmove', function (e) {
+                me.touchmove(e)
+            }, false);
+            me.ulDOM.addEventListener('touchend', function (e) {
+                me.touchend(e)
+            }, false);
         },
         renderHtml: function (content) {
             var me = this,
@@ -61,7 +83,9 @@
                 var item = me.renderLi(content[i]);
                 html = html + item;
             };
-            html += html;
+            var first = me.renderLi(content[0]);
+            var last = me.renderLi(content[lens - 1]);
+            html = last + html + first;
             ul.innerHTML = html;
             return ul
         },
@@ -84,36 +108,131 @@
 
         },
         setting: function () {
-            var me = this,opts = me.opts;
+            var me = this,
+                opts = me.opts;
             me.wrapWidth = me.wrap.offsetWidth;
             me.ulDOM = me.wrap.querySelectorAll('ul')[0];
             me.allLiDOM = me.ulDOM.querySelectorAll('li');
             me.ulDOM.style.width = me.wrapWidth * me.allLiDOM.length + 'px';
-            me.ulDOM.style.transform = "translateX(0px)";
+            me.ulDOM.style.transform = "translateX(" + -me.wrapWidth + "px)";
+            me.ulDOM.style.transitionDuration = "0ms";
             [].slice.call(me.allLiDOM, 0).forEach(function (item) {
                 item.style.width = me.wrapWidth + "px";
             })
 
         },
+        move: function (idx) {
+            var me = this,
+                opts = me.opts;
 
-        // move: function (that) {
-        //     that.index++;
-        //     that.isMoving = true;
-        //     var target = -1 * that.wrapWidth * that.index;
-        //     var tempIndex = that.index;
-        //     if (that.index >= that.allLiDOM.length / 2) {
-        //         tempIndex = 0;
-        //     }
-        //     that.showBtn(tempIndex)
-        // },
-        // showBtn: function (idx) {
-        //     var that = this;
-        //     var childNode = that.pageDOM.querySelectorAll('span');
-        //     [].slice.call(childNode, 0).forEach(function (item) {
-        //         item.style.backgroundColor = "blue";
-        //     });
-        //     childNode[idx].style.backgroundColor = "red";
-        // }
+            var target = -1 * me.wrapWidth * idx;
+            var lens = opts.content.length;
+            if (target >= 0) {
+                opts.index = $Q('li', me.ulDOM).length;
+                setTimeout(function () {
+                    me.ulDOM.style.transitionDuration = "0ms";
+                }, 0)
+
+                me.ulDOM.style.transform = "translateX(" + -me.wrapWidth * lens + "px)";
+                return;
+            }
+            if (-target < me.ulDOM.offsetWidth) {
+                me.ulDOM.style.transitionDuration = "200ms";
+                me.ulDOM.style.transform = "translateX(" + target + "px)";
+            } else {
+                opts.index = 1;
+                setTimeout(function () {
+                    me.ulDOM.style.transitionDuration = "0ms";
+                    me.ulDOM.style.transform = "translateX(" + -me.wrapWidth + "px)";
+                }, 0)
+            };
+        },
+
+        loop: function () {
+            var me = this,
+                opts = me.opts;
+
+            opts.timer = setInterval(function () {
+                var that = me;
+                opts.index++;
+                me.showBtn(opts.index);
+                console.log(opts.index)
+
+                me.move(opts.index - 1);
+                if (me.wrapWidth * opts.index > me.wrapWidth * (opts.content.length + 1)) {
+                    clearInterval(me.opts.timer);
+                    opts.index = 1;
+
+                    setTimeout(function () {
+                        that.ulDOM.style.transform = "translateX(" + -me.wrapWidth + "px)";
+                        that.ulDOM.style.transitionDuration = "0ms";
+                        that.loop()
+                    }, 1000)
+
+                }
+            }, 2000)
+        },
+        showBtn: function (idx) {
+            var me = this,
+                opts = me.opts;
+            var childNode = me.pageDOM.querySelectorAll('span');
+            [].slice.call(childNode, 0).forEach(function (item) {
+                item.style.backgroundColor = "blue";
+            });
+            idx = idx - 2;
+            if (childNode[idx] == undefined) {
+                idx = 0;
+            }
+            childNode[idx].style.backgroundColor = "red";
+        },
+
+        // 滑动事件
+        touchstart: function (e) {
+            var me = this,
+                opts = me.opts;
+            var point = hasTouch ? e.touches[0] : e;
+            var currentDist = me.ulDOM.style.transform.replace('translateX(', "").replace("px)", "");
+            currentDist = parseInt(currentDist);
+            me.startX = point.pageX;
+            me.startY = point.pageY;
+            me.initX = point.pageX - currentDist;
+        },
+
+        touchmove: function (e) {
+            var me = this,
+                opts = me.opts;
+            var point = hasTouch ? e.touches[0] : e;
+            var dist = point.pageX - me.initX;
+            me.ulDOM.style.transform = "translateX(" + dist + "px)";
+
+        },
+        touchend: function (e) {
+            var me = this,
+                opts = me.opts;
+            var point = hasTouch ? e.changedTouches[0] : e;
+            var endX = point.pageX;
+            var endY = point.pageY;
+            var distriX = endX - me.startX;
+            var distriY = me.startY - endY;
+            var angle = GetSlideAngle(distriX, distriY);
+            console.log(angle, 'result');
+            if (angle >= -45 && angle < 45) {
+                // --->
+                opts.index--;
+            } else if (angle >= 45 && angle < 135) {
+                //    上
+            } else if (angle >= -135 && angle < -45) {
+                //   下 
+            } else if ((angle >= 135 && angle <= 180) || (angle >= -180 && angle < -135)) {
+                //  <---
+                opts.index++;
+            }
+
+            me.move(opts.index);
+
+
+        }
+
     }
 
     var slide = function (params) {
