@@ -67,7 +67,7 @@
             navDOM: '',               // 导航Ul
             index: 1,                 
             timer: null,
-            duration: 2000 // 间隔时间
+            duration: 3 // 间隔时间
         };
         this.opts = extend(defaultOpts, options || {});
         this.wrap = $Q(this.opts.wrap)[0];
@@ -146,7 +146,7 @@
                 that.index++;
                 that.addTransition();
                 that.setTranslateX(-that.index * that.imgWidth)
-            }, opts.duration);
+            }, opts.duration*1000);
 
             transitionEnd(that.ulDOM, function () {
                 if (that.index > that.allLiDOM.length - 2) {
@@ -190,7 +190,7 @@
             var that = this,
                 opts = that.opts;
             // 滑动超过 1/3 即为滑动有效，否则即为无效，则吸附回去
-            if (that.isMove && Math.abs(that.distanceX) > that.imgWidth / 3) {
+            if (that.isMove && Math.abs(that.distanceX) > that.imgWidth / 4) {
                 //5.当滑动超过了一定的距离  需要 跳到 下一张或者上一张  （滑动的方向）*/
                 if (that.distanceX > 0) { //上一张
                     that.index--;
@@ -209,7 +209,7 @@
                     that.index++; //自动轮播到下一张
                     that.addTransition(); //加过渡动画
                     that.setTranslateX(-that.index * that.imgWidth); //定位
-                }, that.opts.duration);
+                }, that.opts.duration*1000);
             }
 
             transitionEnd(that.ulDOM, function () {
