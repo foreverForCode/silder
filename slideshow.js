@@ -101,6 +101,7 @@
             window.addEventListener('touchend', function (e) {
                 that.touchend(e)
             }, false);
+            that.clickNav();
             if(!that.opts.showPage){
                 that.navDOM.style.display="none";
             }
@@ -137,6 +138,28 @@
             that.ulDOM.style.transform = "translateX(" + translatex + "px)";
             that.ulDOM.style.webkitTransition = "translateX(" + translatex + "px)"
         },
+        // 重置定时器
+         resetInterval(context){
+            clearInterval(context.timer);
+            context.reset();
+            if (context.opts.isLoop) {
+                context.timer = setInterval(function () {
+                    context.index++; //自动轮播到下一张
+                    context.addTransition(); //加过渡动画
+                    context.setTranslateX(-context.index * context.imgWidth); //定位
+                }, context.opts.duration*1000);
+            };
+            transitionEnd(context.ulDOM, function () {
+                if (context.index > context.allLiDOM.length - 2) {
+                    context.index = 1
+                } else if (context.index <= 0) {
+                    context.index = context.allLiDOM.length - 2
+                };
+                context.removeTransition(); //清除过渡
+                // me.setTranslateX(-me.index*me.imgWidth)
+                context.switchNav();
+            })
+         },
         // autoPlay
         autoplay: function () {
             var that = this;
@@ -160,15 +183,38 @@
             })
         },
         // 导航状态切换
-        switchNav: function () {
+        switchNav: function (current) {
             var that = this,
                 opts = that.opts;
             that.navDots.forEach(function (item) {
                 item.className = "";
             });
-
-            that.navDots[that.index - 1].className = "now"
+            if(current == undefined){
+                that.navDots[that.index - 1].className = "now"
+            }else{
+                that.navDots[current].className = "now"
+            }
+            
         },
+        // 导航点击事件
+        clickNav:function(){
+            var that = this,opts = that.opts;
+            that.navDots.forEach(function(dot,index){
+                var me = that;
+                console.log(dot,index);
+                dot.addEventListener('click',function(){
+                            
+                    var target = - me.imgWidth * (index+1);
+                    me.index = index+1;
+                    me.addTransition();
+                    me.setTranslateX(target);
+                   
+                    me.resetInterval(me);
+
+                },false)
+            })
+        },
+
         // touch事件
         touchstart: function (e) {
             var that = this,
@@ -189,7 +235,7 @@
         touchend: function (e) {
             var that = this,
                 opts = that.opts;
-            // 滑动超过 1/3 即为滑动有效，否则即为无效，则吸附回去
+            // 滑动超过 1/4 即为滑动有效，否则即为无效，则吸附回去
             if (that.isMove && Math.abs(that.distanceX) > that.imgWidth / 4) {
                 //5.当滑动超过了一定的距离  需要 跳到 下一张或者上一张  （滑动的方向）*/
                 if (that.distanceX > 0) { //上一张
@@ -200,26 +246,8 @@
             }
             that.addTransition(); //加过渡动画
             that.setTranslateX(-that.index * that.imgWidth); //定位
-
-            that.reset();
-            //加定时器
-            clearInterval(that.timer); //严谨 再清除一次定时器
-            if (that.opts.isLoop) {
-                that.timer = setInterval(function () {
-                    that.index++; //自动轮播到下一张
-                    that.addTransition(); //加过渡动画
-                    that.setTranslateX(-that.index * that.imgWidth); //定位
-                }, that.opts.duration*1000);
-            }
-
-            transitionEnd(that.ulDOM, function () {
-                if (that.index > that.allLiDOM.length - 2) {
-                    that.index = 1
-                } else if (that.index <= 0) {
-                    that.index = that.allLiDOM.length - 2
-                };
-                that.switchNav();
-            })
+            that.resetInterval(that);
+            
         }
     };
 
