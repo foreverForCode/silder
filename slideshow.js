@@ -169,7 +169,7 @@
 
             that.navDots[that.index - 1].className = "now"
         },
-        // touch
+        // touch事件
         touchstart: function (e) {
             var that = this,
                 opts = that.opts;
