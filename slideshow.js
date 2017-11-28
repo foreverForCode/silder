@@ -61,6 +61,7 @@
         var defaultOpts = {
             isLoop: true,             // 是否循环播放
             showPage: false,          // 是否显示显示导航栏
+            isTouch:true,
             wrap: '',                 // 大盒子
             ulDOM: '',                // 图片Ul
             allLiDOM: null,           // 图片列表
@@ -91,13 +92,16 @@
             if (opts.isLoop) {
                 that.autoplay()
             };
-            that.touchstart();
+            if(opts.isTouch){
+                that.touchinit();
+            }
+            
             that.clickNav();
             if(!that.opts.showPage){
                 that.navDOM.style.display="none";
             }
         },
-        touchstart:function(){
+        touchinit:function(){
             var that = this,opts = that.opts;
             
             that.ulDOM.addEventListener('touchstart', function (e) {
