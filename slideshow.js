@@ -91,7 +91,15 @@
             if (opts.isLoop) {
                 that.autoplay()
             };
-
+            that.touchstart();
+            that.clickNav();
+            if(!that.opts.showPage){
+                that.navDOM.style.display="none";
+            }
+        },
+        touchstart:function(){
+            var that = this,opts = that.opts;
+            
             that.ulDOM.addEventListener('touchstart', function (e) {
                 that.touchstart(e)
             }, false);
@@ -101,10 +109,6 @@
             window.addEventListener('touchend', function (e) {
                 that.touchend(e)
             }, false);
-            that.clickNav();
-            if(!that.opts.showPage){
-                that.navDOM.style.display="none";
-            }
         },
         // 重置参数
         reset: function () {
