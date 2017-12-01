@@ -39,12 +39,10 @@ ol,ul{
     position: relative;
 }
 .banner ul:first-child{
-    width: 1000%;
-    -webkit-transform: translateX(-10%);
-    transform: translateX(-10%);
+    /* -webkit-transform: translateX(-10%);
+    transform: translateX(-10%); */
 }
 .banner ul:first-child li{
-    width: 10%;
     float: left;
 }
 .banner ul:first-child li a{
@@ -74,4 +72,19 @@ ol,ul{
 }
 .banner ul:last-child li.now{
     background: #fff;
+}
+
+.page .prev{
+    position: absolute;
+    top:0;
+    left:0;
+   
+    background-color:rgba(0, 0, 0, .3);
+}
+.page .next{
+    position: absolute;
+    top:0;
+    right:0;
+    
+    background-color:rgba(0, 0, 0, .3);
 }

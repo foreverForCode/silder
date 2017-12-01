@@ -1,7 +1,7 @@
 ;
 (function (window) {
 
-    /*封装一个事件 过渡结束事件*/
+    /*监听过渡结束事件*/
     var transitionEnd = function (dom, callback) {
         //1.给谁加事件
         //2.事件触发后处理什么业务
@@ -59,21 +59,29 @@
 
     var Slide = function (options) {
         var defaultOpts = {
-            isLoop: true,             // 是否循环播放
-            showPage: false,          // 是否显示显示导航栏
-            isTouch:true,
-            wrap: '',                 // 大盒子
-            ulDOM: '',                // 图片Ul
-            allLiDOM: null,           // 图片列表
-            navDOM: '',               // 导航Ul
-            index: 1,                 
+            mainCell:'.slider',
+            conCell:'.bd',
+            navCell:'.hd',
+            isLoop: true, // 是否循环播放
+            showPage: false, // 是否显示显示导航栏
+            isTouch: true, // 是否可以拖动
+            effect: "", // 特效模式
+            wrap: '', // 大盒子
+            ulDOM: '', // 图片Ul
+            allLiDOM: null, // 图片列表
+            navDOM: '', // 导航Ul
+            index: 1,
             timer: null,
             duration: 3 // 间隔时间
         };
         this.opts = extend(defaultOpts, options || {});
         this.wrap = $Q(this.opts.wrap)[0];
+        this.wrapWidth = this.wrap.offsetWidth;
         this.ulDOM = $Q(this.opts.ulDOM, this.wrap)[0];
         this.allLiDOM = $Q('li', this.ulDOM);
+        this.ulDOM.style.width = this.wrapWidth * this.allLiDOM.length + "px";
+
+        this.pageDOM = $Q('.page')[0];
         this.navDOM = $Q(this.opts.navDOM, this.wrap)[0];
         this.imgWidth = this.wrap.offsetWidth;
         this.navDots = $Q('li', this.navDOM);
@@ -92,18 +100,80 @@
             if (opts.isLoop) {
                 that.autoplay()
             };
-            if(opts.isTouch){
+            if (opts.isTouch) {
                 that.touchinit();
             }
-            
+
             that.clickNav();
-            if(!that.opts.showPage){
-                that.navDOM.style.display="none";
+            // if (!that.opts.showPage) {
+            //     that.navDOM.style.display = "none";
+            // }
+            if (opts.effect == "special") {
+                // 特效 
+                
+                that.allLiDOM.forEach(function (item) {
+                    item.style.width = that.wrapWidth * 0.8 + "px";
+                });
+                that.setTranslateX(-that.wrapWidth * 0.7);
+                that.pagestyle();
+                that.pageNav();
+                // 特效
+            }else{
+                that.allLiDOM.forEach(function (item) {
+                    item.style.width = that.wrapWidth  + "px";
+                });
+                $Q('.page')[0].style.display = "none";
             }
+
         },
-        touchinit:function(){
+        pagestyle:function(){
             var that = this,opts = that.opts;
             
+            var child = $Q('p',that.pageDOM);
+            child.forEach(function(item){
+                item.style.width = that.wrapWidth*0.1+"px";
+                item.style.height = that.wrap.offsetHeight+"px";
+            })
+           
+        },
+        // 上一页 和 下一页
+        pageNav:function(){
+            var that = this,opts = that.opts;
+            
+            var child = $Q('p',that.pageDOM);
+            var prevDOM = child[0];
+            var nextDOM = child[1];
+            prevDOM.addEventListener('click',function(){
+                that.index -- ;
+                that.addTransition();
+                var target = -that.index*that.imgWidth*0.8-that.imgWidth*0.7;
+                that.setTranslateX(target);
+                clearInterval(that.timer);
+                that.timer = setInterval(function () {
+                    that.index++;
+                    that.addTransition();
+                    var target = that.imgWidth * 0.8 * that.index + that.imgWidth * 0.7
+                    that.setTranslateX(-target)
+                }, 3000);
+            },false);
+            nextDOM.addEventListener('click',function(){
+                that.index ++;
+                that.addTransition();
+                var target = -that.index*that.imgWidth*0.8-that.imgWidth*0.7;
+                that.setTranslateX(target);
+                clearInterval(that.timer);
+                that.timer = setInterval(function () {
+                    that.index++;
+                    that.addTransition();
+                    var target = that.imgWidth * 0.8 * that.index + that.imgWidth * 0.7
+                    that.setTranslateX(-target)
+                }, 3000);
+            },false);
+        },
+        touchinit: function () {
+            var that = this,
+                opts = that.opts;
+
             that.ulDOM.addEventListener('touchstart', function (e) {
                 that.touchstart(e)
             }, false);
@@ -147,27 +217,32 @@
             that.ulDOM.style.webkitTransition = "translateX(" + translatex + "px)"
         },
         // 重置定时器
-         resetInterval(context){
+        resetInterval(context) {
             clearInterval(context.timer);
             context.reset();
             if (context.opts.isLoop) {
                 context.timer = setInterval(function () {
                     context.index++; //自动轮播到下一张
                     context.addTransition(); //加过渡动画
-                    context.setTranslateX(-context.index * context.imgWidth); //定位
-                }, context.opts.duration*1000);
+                    // context.setTranslateX(-context.index * context.imgWidth); //定位
+                    if(context.opts.effect == "special"){
+                        context.setTranslateX(-context.index*context.imgWidth*0.8-context.imgWidth*0.7)
+                    }else{
+                        context.setTranslateX(-context.index * context.imgWidth)
+                    }
+                }, context.opts.duration * 1000);
             };
             transitionEnd(context.ulDOM, function () {
-                if (context.index > context.allLiDOM.length - 2) {
+                if (context.index > context.allLiDOM.length - 4) {
                     context.index = 1
                 } else if (context.index <= 0) {
-                    context.index = context.allLiDOM.length - 2
+                    context.index = context.allLiDOM.length - 4
                 };
                 context.removeTransition(); //清除过渡
                 // me.setTranslateX(-me.index*me.imgWidth)
                 context.switchNav();
             })
-         },
+        },
         // autoPlay
         autoplay: function () {
             var that = this;
@@ -176,17 +251,26 @@
             that.timer = setInterval(function () {
                 that.index++;
                 that.addTransition();
-                that.setTranslateX(-that.index * that.imgWidth)
-            }, opts.duration*1000);
+                if(opts.effect == "special"){
+                    that.setTranslateX(-that.index*that.imgWidth*0.8-that.imgWidth*0.7)
+                }else{
+                    that.setTranslateX(-that.index * that.imgWidth)
+                }
+               
+            }, opts.duration * 1000);
 
             transitionEnd(that.ulDOM, function () {
-                if (that.index > that.allLiDOM.length - 2) {
+                if (that.index > that.allLiDOM.length - 4) {
                     that.index = 1
                 } else if (that.index <= 0) {
-                    that.index = that.allLiDOM.length - 2
+                    that.index = that.allLiDOM.length - 4
                 };
                 that.removeTransition(); //清除过渡
-                that.setTranslateX(-that.index*that.imgWidth)
+                if(opts.effect == "special"){
+                    that.setTranslateX(-that.index*that.imgWidth*0.8-that.imgWidth*0.7)
+                }else{
+                    that.setTranslateX(-that.index * that.imgWidth)
+                }
                 that.switchNav();
             })
         },
@@ -197,29 +281,30 @@
             that.navDots.forEach(function (item) {
                 item.className = "";
             });
-            if(current == undefined){
+            if (current == undefined) {
                 that.navDots[that.index - 1].className = "now"
-            }else{
+            } else {
                 that.navDots[current].className = "now"
             }
-            
+
         },
         // 导航点击事件
-        clickNav:function(){
-            var that = this,opts = that.opts;
-            that.navDots.forEach(function(dot,index){
+        clickNav: function () {
+            var that = this,
+                opts = that.opts;
+            that.navDots.forEach(function (dot, index) {
                 var me = that;
-                console.log(dot,index);
-                dot.addEventListener('click',function(){
-                            
-                    var target = - me.imgWidth * (index+1);
-                    me.index = index+1;
+                console.log(dot, index);
+                dot.addEventListener('click', function () {
+
+                    var target = -me.imgWidth * (index + 1);
+                    me.index = index + 1;
                     me.addTransition();
                     me.setTranslateX(target);
-                   
+
                     me.resetInterval(me);
 
-                },false)
+                }, false)
             })
         },
 
@@ -253,9 +338,13 @@
                 }
             }
             that.addTransition(); //加过渡动画
-            that.setTranslateX(-that.index * that.imgWidth); //定位
+            if(opts.effect == "special"){
+                that.setTranslateX(-that.index*that.imgWidth*0.8-that.imgWidth*0.7)
+            }else{
+                that.setTranslateX(-that.index * that.imgWidth)
+            }
             that.resetInterval(that);
-            
+
         }
     };
 

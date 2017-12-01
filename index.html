@@ -1,45 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <title>移动端-轮播图</title>
     <link rel="stylesheet" href="./index.css">
 </head>
-<body>
-<div class="layout">
-    <div class="banner">
-        <ul class="clearfix imglist">
-            <li><a href="#"><img src="./images/15.jpg"></a></li>
-            <li><a href="#"><img src="./images/11.jpg"></a></li>
-            <li><a href="#"><img src="./images/12.jpg"></a></li>
-            <li><a href="#"><img src="./images/13.jpg"></a></li>
-            <li><a href="#"><img src="./images/14.jpg"></a></li>
-            <li><a href="#"><img src="./images/15.jpg"></a></li>
-            <li><a href="#"><img src="./images/11.jpg"></a></li>
-        </ul>
-        <ul class="navlist">
-            <li class="now"></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-        </ul>
-    </div>
-</div>
 
-<script src="./slideshow.js"></script>
-<script>
-    window.onload=function(){
-        slide({
-            wrap: '.banner',
-            ulDOM: '.imglist',
-            navDOM: '.navlist',
-            isLoop:true,
-            showPage:true 
-        })
-    }
-</script>
+<body>
+    <div class="layout">
+        <div class="slider">
+            <div class="bd">
+                <ul class="clearfix imglist">
+                    <li><a href="#"><img src="./images/14.jpg"></a></li>
+                    <li><a href="#"><img src="./images/15.jpg"></a></li>
+                    <li><a href="#"><img src="./images/11.jpg"></a></li>
+                    <li><a href="#"><img src="./images/12.jpg"></a></li>
+                    <li><a href="#"><img src="./images/13.jpg"></a></li>
+                    <li><a href="#"><img src="./images/14.jpg"></a></li>
+                    <li><a href="#"><img src="./images/15.jpg"></a></li>
+                    <li><a href="#"><img src="./images/11.jpg"></a></li>
+                    <li><a href="#"><img src="./images/12.jpg"></a></li>
+                </ul>
+            </div>
+            <div class="hd">
+                <ul class="navlist">
+                    <li class="now"></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="page">
+            <p class="prev"></p>
+            <p class="next"></p>
+        </div>
+    </div>
+
+    <script src="./slideshow.js"></script>
+    <script>
+        window.onload = function () {
+            slide({
+                wrap: '.banner',
+                ulDOM: '.imglist',
+                navDOM: '.navlist',
+                isLoop: true,
+                showPage: true,
+                isTouch: true,
+                effect: 'nomal' // nomal  special
+            })
+        }
+    </script>
 </body>
+
 </html>
