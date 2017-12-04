@@ -13,10 +13,10 @@
         <div class="slider">
             <div class="bd">
                 <ul>
-                    <li><a href="#"><img src="./images/11.jpg"></a></li>
-                    <li><a href="#"><img src="./images/12.jpg"></a></li>
-                    <li><a href="#"><img src="./images/13.jpg"></a></li>
-                    <li><a href="#"><img src="./images/14.jpg"></a></li>
+                    <li><a href="#"><img _src="./images/11.jpg"></a></li>
+                    <li><a href="#"><img _src="./images/12.jpg"></a></li>
+                    <li><a href="#"><img _src="./images/13.jpg"></a></li>
+                    <li><a href="#"><img _src="./images/14.jpg"></a></li>
                     
                 </ul>
             </div>
@@ -52,8 +52,9 @@
                 showNav:true,        // 显示底部导航
                 hasHandle:true,      // 是否有左右导航
                 isTouch:true,       // 是否可以拖拽
-                isLoop:true,         // 是否自动播放
-                navDOMHTML:'<li>$</li>'
+                isLoop:false,         // 是否自动播放
+                navDOMHTML:'<li>$</li>',
+                sLoad:'_src'
             })
         }
     </script>

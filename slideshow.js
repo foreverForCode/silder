@@ -74,7 +74,8 @@
             timer: null, // 计时器
             duration: 3, // 间隔时间
             speed: 300, // 过渡函数执行时间
-            navDOMHTML:'' // 底部HTML自定义
+            navDOMHTML:'', // 底部HTML自定义
+            sLoad:''
                 
         };
         this.opts = Help.extend(defaultOpts, options || {});
@@ -172,7 +173,11 @@
 
             // 是否自动播放
             if (opts.isLoop) {
-                that.autoplay()
+                that.autoplay();
+                that.imgLazy();
+            }else{
+                that.index++;
+                that.imgLazy();
             };
             // 是否需要底部导航
             if (opts.showNav) {
@@ -196,7 +201,24 @@
                 }, false);
             };
             that.pageStateEvent();
-
+            
+            
+        },
+        // 图片懒加载
+        imgLazy:function(){
+            var that = this,opts = that.opts;
+            console.log(that.index);
+              
+            try{ var currentSlide = that.conDOM.children[that.index];
+                var imgDOM = currentSlide.getElementsByTagName('img')[0];}catch(e){
+                var currentSlide = that.conDOM.children[that.conDOMLens-1];
+                var imgDOM = currentSlide.getElementsByTagName('img')[0];
+            };
+            
+            if ( imgDOM.getAttribute(opts.sLoad) ){ 
+                imgDOM.setAttribute("src", imgDOM.getAttribute(opts.sLoad) ); 
+                imgDOM.removeAttribute( opts.sLoad );
+            } 
         },
         // 重置参数
         reset: function () {
@@ -221,13 +243,16 @@
                 }, context.opts.duration*1000);
             };
             Help.transitionEnd(context.conDOM, function () {
+                
                 if (context.index > context.conDOMLens - 2) {
                     context.index = 1
                 } else if (context.index <= 0) {
                     context.index = context.conDOMLens - 2
                 };
+                
                 Help.removeTransition(context.conDOM); //清除过渡
                 Help.setTranslateX(context.conDOM, -context.index * context.slideWidth)
+                
                 context.switchNav();
             })
          },
@@ -239,6 +264,7 @@
             that.index = 1;
             that.timer = setInterval(function(){
                 that.index++;
+                that.imgLazy();
                 Help.addTransition(that.conDOM,opts.speed);
                 Help.setTranslateX(that.conDOM,-that.index*that.slideWidth);
             },opts.duration*1000)
@@ -270,7 +296,8 @@
             } else {
                 that.navDOM[current].classList.add(opts.curNavClassName)
             }
-            that.pageStateEvent();         
+            that.pageStateEvent();  
+            that.imgLazy();       
         },
         pageStateEvent:function(){
             var that = this;
@@ -310,6 +337,7 @@
                     break;
                 default:break;
             };
+            that.imgLazy();
             Help.addTransition(that.conDOM,opts.speed);
             Help.setTranslateX(that.conDOM, -that.index * that.slideWidth);   
             that.resetInterval(that);
