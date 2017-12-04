@@ -33,33 +33,21 @@ ol,ul{
     margin: 0 auto;
     position: relative;
 }
-.banner{
+.slider{
     width: 100%;
-    overflow: hidden;
     position: relative;
 }
-.banner ul:first-child{
-    /* -webkit-transform: translateX(-10%);
-    transform: translateX(-10%); */
-}
-.banner ul:first-child li{
-    float: left;
-}
-.banner ul:first-child li a{
-    display: block;
-    width: 100%;
-}
-.banner ul:first-child li a img{
-    width: 100%;
-    display: block;
-}
-.banner ul:last-child{
+.slider .hd{
+    width:100%;
     position: absolute;
-    bottom: 6px;
-    width: 100%;
+    bottom:20px;
+}
+
+.slider .hd ul{
+    width:100%;
     text-align: center;
 }
-.banner ul:last-child li{
+.slider .hd ul li{
     width: 6px;
     height: 6px;
     border: 1px solid #fff;
@@ -67,24 +55,54 @@ ol,ul{
     display: inline-block;
     margin-left: 10px;
 }
-.banner ul:last-child li:first-child{
-    margin-left: 0;
-}
-.banner ul:last-child li.now{
-    background: #fff;
+.slider .hd ul li:first-child{
+    margin-left: 0px;
 }
 
-.page .prev{
-    position: absolute;
-    top:0;
-    left:0;
-   
-    background-color:rgba(0, 0, 0, .3);
+/* 动态效果 */
+.slider .hd ul li.on{
+    background-color: #fff;
 }
-.page .next{
+
+
+/* 上一页 和 下一页  */
+.slider .page{
+    width:100%;
+    height: auto;
+
+}
+
+.slider .page p{
+    height: 100%;
+}
+
+.arrow{
+    display: block;
+    width:50px;
+    height: 50px;
+    border: 1px solid #fff;
+    margin-top:68px;
+}
+
+.leftArrow{
+    border-right: none!important;
+    border-bottom:none!important;
+    transform: rotate(-45deg);
+    margin-left: 20px;
+}
+.rightArrow{
+    border-left: none!important;
+    border-bottom:none!important;
+    transform: rotate(45deg);
+    margin-right: 20px;
+}
+.slider .page .prev{
     position: absolute;
-    top:0;
+    top: 0;
+    left: 0;
+}
+.slider .page .next{
+    position: absolute;
+    top: 0;
     right:0;
-    
-    background-color:rgba(0, 0, 0, .3);
 }
