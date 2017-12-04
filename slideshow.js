@@ -19,36 +19,6 @@
                 callback && callback();
             });
         },
-        //封装一个tap事件
-        tap: function (dom, callback) {
-            if (!dom || typeof dom != 'object') {
-                //没dom的时候或者不是一个对象的时候 程序停止
-                return false;
-            }
-
-            var isMove = false; //是否滑动过
-            var time = 0; //刚刚触摸屏幕的事件  touchstart的触发事件
-
-            dom.addEventListener('touchstart', function () {
-                //记录触发这个事件的时间
-                time = Date.now(); //时间戳 毫秒
-            });
-            dom.addEventListener('touchmove', function () {
-                isMove = true;
-            });
-            win.addEventListener('touchend', function (e) {
-                //1.没有滑动过
-                //2.响应事件在150ms以内   要求比click要响应快
-                if (!isMove && (Date.now() - time) < 150) {
-                    callback && callback(e);
-                }
-
-                //重置参数
-                isMove = false;
-                time = 0;
-            });
-
-        },
         // 获取节点
         $Q: function (select, context) {
             context = context || document;
@@ -96,15 +66,15 @@
             curNavClassName: 'on', // 当前导航类名
             pageStateCell:'.pageState', // 1/2
             isLoop: true, // 是否循环播放
-            showNav: true, // 是否显示显示导航栏
-            isTouch: true, // 是否可以拖动
-            hasHandle: true, //是否需要左右导航
-            effect: "nomal", // 特效模式        nomal leftLoop
+            showNav: false, // 是否显示显示导航栏
+            isTouch: false, // 是否可以拖动
+            hasHandle: false, //是否需要左右导航,
+            effect: "leftLoop", // 特效模式        nomal leftLoop
             index: 0, // 下标 
             timer: null, // 计时器
             duration: 3, // 间隔时间
             speed: 300, // 过渡函数执行时间
-            navDOMHTML:''
+            navDOMHTML:'' // 底部HTML自定义
                 
         };
         this.opts = Help.extend(defaultOpts, options || {});
@@ -151,53 +121,45 @@
             var that = this,
                 opts = that.opts;
 
-            if(that.effect = "leftLoop"){
+            if(that.effect == "leftLoop"){
                 that.conDOMLens += 2;
 
 				that.conDOM.appendChild(that.conDOM.children[0].cloneNode(true));
-				that.conDOM.insertBefore(that.conDOM.children[that.conDOMLens -2].cloneNode(true),that.conDOM.children[0]);
+                that.conDOM.insertBefore(that.conDOM.children[that.conDOMLens -3].cloneNode(true),that.conDOM.children[0]);
             }
 
             var conWidth = that.conDOMLens * that.slideWidth;
-            var hdDOM = opts.navCell.replace(" li",""); 
-            var navDOMFather = Help.$Q(hdDOM,that.slideDOM)[0].childNodes[1];
-
+           
             var twCell = Help.wrap(that.conDOM, '<div class="tempWrap" style="overflow:hidden; position:relative;"></div>');
 
             that.conDOM = Help.$Q(opts.conCell, twCell)[0];
-
-            that.conDOM.style.cssText = "width:" + conWidth + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;";
-
+            if(that.effect == "leftLoop"){
+                that.conDOM.style.cssText = "width:" + conWidth + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;transform:translateX("+-that.slideWidth+"px)";
+            }
+            
             [].slice.call(that.conDOM.children, 0).forEach(function (node) {
                 node.style.cssText = "display:table-cell;vertical-align:top;width:" + that.slideWidth + "px";
                 Help.$Q('img', node).forEach(function (item) {
                     item.style.width = that.slideWidth + "px";
                 })
             });
-
+            // 处理 如果没有提供底部圆点，自动生成
             if(!that.navDOM.length && !opts.navDOMHTML){
                 var temp = "";
-                for(var i = 0;i<that.conDOMLens-1;i++){
-                    if(i == 0){
-                        temp += "<li class="+that.opts.curNavClassName+"></li>"
-                    }
+                for(var i = 0;i<that.conDOMLens-2;i++){
                     temp += "<li></li>"
                 };
-
-                navDOMFather.innerHTML = temp;
             }else if(!that.navDOM.length && opts.navDOMHTML){
                 var temp = "";
-                for(var i = 0;i<that.conDOMLens;i++){
-                    if(i == 0){
-                        var str3 = that.opts.navDOMHTML.substring(0,3);
-                        temp +=that.opts.navDOMHTML.replace(str3," "+str3+"class='on'").replace('$',"");
-                    }
+                for(var i = 0;i<that.conDOMLens-2;i++){
                     temp += that.opts.navDOMHTML.replace('$',"")
                 }
-                navDOMFather.innerHTML = temp;
             }
-
-            this.navDOM = Help.$Q(this.opts.navCell, this.slideDOM)[0].children;
+            that.navDOM = Help.$Q(that.opts.navCell, that.slideDOM)[0]
+            that.navDOM.innerHTML = temp;
+            that.navDOM = that.navDOM.children;
+            that.navDOM[0].classList.add(opts.curNavClassName);
+            
             that.init();
         },
 
@@ -214,7 +176,7 @@
             if (opts.showNav) {
                 that.clickNav();
             } else {
-                that.navDOM.forEach(function (node) {
+                [].slice.call(that.navDOM,0).forEach(function (node) {
                     node.style.display = "none";
                 })
             };
@@ -227,7 +189,9 @@
 
             // 是否可以拖动
             if (opts.isTouch) {
-                that.touchinit();
+                that.conDOM.addEventListener('touchstart', function (e) {
+                    that.touchstart(e)
+                }, false);
             };
             that.pageStateEvent();
 
@@ -243,68 +207,74 @@
             that.isMove = false;
 
         },
-        // 移动 ++ --
-        move: function (moveStatus) {
-            var that = this,
-                opts = that.opts;
-                // pagestate
-            
-            switch (moveStatus) {
-                case 'add':
-                    that.index++;
-                    if (that.index > that.conDOMLens - 1) {
-                        that.index = 0;
-                    }
-                    break;
-                case 'sub':
-                    that.index--;
-                    if (that.index < 0) {
-                        that.index = that.conDOMLens - 1;
-                    }
-                    break;
-                default:
-                    break;
+        // 重置定时器
+        resetInterval(context){
+            clearInterval(context.timer);
+            context.reset();
+            if (context.opts.isLoop) {
+                context.timer = setInterval(function () {
+                    context.index++; //自动轮播到下一张
+                    Help.addTransition(context.conDOM,context.opts.speed);
+                    Help.setTranslateX(context.conDOM,-context.index * context.slideWidth); //定位
+                }, context.opts.duration*1000);
             };
-            Help.addTransition(that.conDOM, opts.speed);
-            Help.setTranslateX(that.conDOM, -that.index * that.slideWidth)
-            that.switchNav();
-        },
-
+            Help.transitionEnd(context.conDOM, function () {
+                if (context.index > context.conDOMLens - 2) {
+                    context.index = 1
+                } else if (context.index <= 0) {
+                    context.index = context.conDOMLens - 2
+                };
+                Help.removeTransition(context.conDOM); //清除过渡
+                Help.setTranslateX(context.conDOM, -context.index * context.slideWidth)
+                context.switchNav();
+            })
+         },
+        
         // autoPlay
         autoplay: function () {
             var that = this;
             opts = that.opts;
-
-            that.timer = setInterval(function () {
-                that.move('add');
-            }, opts.duration * 1000);
-
+            that.index = 1;
+            that.timer = setInterval(function(){
+                that.index++;
+                Help.addTransition(that.conDOM,opts.speed);
+                Help.setTranslateX(that.conDOM,-that.index*that.slideWidth);
+            },opts.duration*1000)
+           
             Help.transitionEnd(that.conDOM, function () {
-                Help.removeTransition(that.conDOM); //清除过渡
+                var me = that;
+                if(me.effect == "leftLoop"){
+                    if (me.index > me.conDOMLens - 2) {
+                        me.index = 1
+                    } else if (me.index <= 0) {
+                        me.index = me.conDOMLens - 2
+                    };
+                    Help.removeTransition(me.conDOM); //清除过渡
+                    Help.setTranslateX(me.conDOM, -me.index * me.slideWidth)
+                }
+                Help.removeTransition(me.conDOM); //清除过渡 
+                me.switchNav();
             })
         },
-        
-
+       
         // 导航状态切换
         switchNav: function (current) {
             var that = this,
-                opts = that.opts;
-                
+                opts = that.opts;               
             [].slice.call(that.navDOM,0).forEach(function (item) {
                 item.className = "";
             });
             if (current == undefined) {
-                that.navDOM[that.index].classList.add(opts.curNavClassName)
+                that.navDOM[that.index-1].classList.add(opts.curNavClassName)
             } else {
                 that.navDOM[current].classList.add(opts.curNavClassName)
             }
-            that.pageStateEvent();
-            
+            that.pageStateEvent();         
         },
         pageStateEvent:function(){
             var that = this;
             if(that.pageStateDOM){
-                that.pageStateDOM.innerHTML = "<span>"+(that.index+1)+"/"+that.conDOMLens+"</span>"
+                that.pageStateDOM.innerHTML = "<span>"+(that.index)+"/"+(that.conDOMLens-2)+"</span>"
             }
         },
         // 导航点击事件
@@ -317,8 +287,8 @@
                 console.log(dot, index);
                 dot.addEventListener('click', function () {
                     clearInterval(me.timer);
-                    var target = -me.slideWidth * index;
-                    me.index = index;
+                    var target = -me.slideWidth * (index+1);
+                    me.index = index+1;
                     me.switchNav()
                     Help.addTransition(me.conDOM, opts.speed);
                     Help.setTranslateX(me.conDOM, target);
@@ -326,48 +296,34 @@
                 }, false)
             })
         },
+        move:function(status){
+            var that = this,opts = that.opts;
 
-        // 重置定时器
-        resetInterval(context) {
-            var that = this,
-                opts = that.opts;
-            clearInterval(context.timer);
-            context.reset();
-            if (context.opts.isLoop) {
-                that.autoplay();
+            clearInterval(that.timer);
+            switch(status){
+                case 'add' :
+                    that.index++;
+                    break;
+                case 'sub' :
+                    that.index--;
+                    break;
+                default:break;
             };
-
-        },
-
+            Help.addTransition(that.conDOM,opts.speed);
+            Help.setTranslateX(that.conDOM, -that.index * that.slideWidth);   
+            that.resetInterval(that);
+        },    
         // 上一页 和 下一页
         pageNav: function () {
             var that = this,
                 opts = that.opts;
             var prevDOM = Help.$Q(opts.prev, that.slideDOM)[0];
             var nextDOM = Help.$Q(opts.next, that.slideDOM)[0];
-            prevDOM.addEventListener('click', function () {
-                that.resetInterval(that);
+            prevDOM.addEventListener('click', function () {     
                 that.move('sub');
             }, false);
-            nextDOM.addEventListener('click', function () {
-                that.resetInterval(that);
+            nextDOM.addEventListener('click', function () {           
                 that.move('add');
-            }, false);
-        },
-
-        // touch启动
-        touchinit: function () {
-            var that = this,
-                opts = that.opts;
-
-            that.conDOM.addEventListener('touchstart', function (e) {
-                that.touchstart(e)
-            }, false);
-            that.conDOM.addEventListener('touchmove', function (e) {
-                that.touchmove(e)
-            }, false);
-            window.addEventListener('touchend', function (e) {
-                that.touchend(e)
             }, false);
         },
         // touch事件
@@ -376,6 +332,12 @@
                 opts = that.opts;
             clearInterval(that.timer);
             that.startX = e.touches[0].clientX;
+            that.conDOM.addEventListener('touchmove', function (e) {
+                that.touchmove(e)
+            }, false);
+            window.addEventListener('touchend', function (e) {
+                that.touchend(e)
+            }, false);
         },
         touchmove: function (e) {
             var that = this,
@@ -403,6 +365,12 @@
                 that.move();
             };
             that.resetInterval(that);
+            that.conDOM.removeEventListener('touchmove', function (e) {
+                that.touchmove(e)
+            }, false);
+            window.removeEventListener('touchend', function (e) {
+                that.touchend(e)
+            }, false);
         }
     };
 

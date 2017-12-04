@@ -17,14 +17,16 @@
                     <li><a href="#"><img src="./images/12.jpg"></a></li>
                     <li><a href="#"><img src="./images/13.jpg"></a></li>
                     <li><a href="#"><img src="./images/14.jpg"></a></li>
+                    
                 </ul>
             </div>
             <div class="hd">
                 <ul>
-                    <li class="on"></li>
+                    <!-- <li class="on"></li>
                     <li></li>
                     <li></li>
-                    <li></li>
+                    <li></li> -->
+                    
                 </ul>
             </div>
             <div class="page">
@@ -35,9 +37,9 @@
                     <span class="arrow rightArrow"></span>
                 </p>
             </div>
-            <div class="pageState">
+            <!-- <div class="pageState">
 
-            </div>
+            </div> -->
 
         </div>
 
@@ -47,6 +49,10 @@
     <script>
         window.onload = function () {
             slide({
+                showNav:true,        // 显示底部导航
+                hasHandle:true,      // 是否有左右导航
+                isTouch:true,       // 是否可以拖拽
+                isLoop:true,         // 是否自动播放
                 navDOMHTML:'<li>$</li>'
             })
         }
