@@ -207,14 +207,12 @@
         // 图片懒加载
         imgLazy:function(){
             var that = this,opts = that.opts;
-            console.log(that.index);
-              
-            try{ var currentSlide = that.conDOM.children[that.index];
-                var imgDOM = currentSlide.getElementsByTagName('img')[0];}catch(e){
+            if(that.conDOM.children[that.index] == undefined){
                 var currentSlide = that.conDOM.children[that.conDOMLens-1];
-                var imgDOM = currentSlide.getElementsByTagName('img')[0];
-            };
-            
+            }else{
+                var currentSlide = that.conDOM.children[that.index];
+            };    
+            var imgDOM = currentSlide.getElementsByTagName('img')[0];
             if ( imgDOM.getAttribute(opts.sLoad) ){ 
                 imgDOM.setAttribute("src", imgDOM.getAttribute(opts.sLoad) ); 
                 imgDOM.removeAttribute( opts.sLoad );
@@ -224,12 +222,10 @@
         reset: function () {
             var that = this,
                 opts = that.opts;
-
             that.startX = 0;
             that.moveX = 0;
             that.distanceX = 0;
             that.isMove = false;
-
         },
         // 重置定时器
         resetInterval(context){
@@ -312,7 +308,6 @@
             [].slice.call(that.navDOM,0).forEach(function (dot, index) {
                 var me = that,
                     opts = that.opts;
-                console.log(dot, index);
                 dot.addEventListener('click', function () {
                     clearInterval(me.timer);
                     var target = -me.slideWidth * (index+1);
