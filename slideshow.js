@@ -69,7 +69,7 @@
             showNav: false, // 是否显示显示导航栏
             isTouch: false, // 是否可以拖动
             hasHandle: false, //是否需要左右导航,
-            effect: "leftLoop", // 特效模式        nomal leftLoop
+            effect: "curtain", // 特效模式        nomal leftLoop curtain(大幕)
             index: 0, // 下标 
             timer: null, // 计时器
             duration: 3, // 间隔时间
@@ -122,7 +122,7 @@
             var that = this,
                 opts = that.opts;
 
-            if(that.effect == "leftLoop"){
+            if(that.effect == "leftLoop" || that.effect == "curtain"){
                 that.conDOMLens += 2;
 
 				that.conDOM.appendChild(that.conDOM.children[0].cloneNode(true));
@@ -136,14 +136,23 @@
             that.conDOM = Help.$Q(opts.conCell, twCell)[0];
             if(that.effect == "leftLoop"){
                 that.conDOM.style.cssText = "width:" + conWidth + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;transform:translateX("+(-that.slideWidth)+"px)";
+            }else if(that.effect == "curtain"){
+                that.conDOM.style.cssText = "width:" + conWidth*0.8 + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;transform:translateX("+(-that.slideWidth*0.7)+"px)";
             }
             
             [].slice.call(that.conDOM.children, 0).forEach(function (node) {
                 node.style.cssText = "display:table-cell;vertical-align:top;width:" + that.slideWidth + "px";
                 Help.$Q('img', node).forEach(function (item) {
-                    item.style.width = that.slideWidth + "px";
+                    if(that.effect == "curtain"){
+                        item.style.width = that.slideWidth*0.8 + "px";
+                    }else{
+                        item.style.width = that.slideWidth + "px";
+                    }
+                   
                 })
             });
+
+           
             // 处理 如果没有提供底部圆点，自动生成
             if(!that.navDOM.length && !opts.navDOMHTML){
                 var temp = "";
@@ -206,11 +215,11 @@
         },
         // 图片懒加载
         imgLazy:function(){
-            var that = this,opts = that.opts;
+            var that = this,opts = that.opts,currentSlide;
             if(that.conDOM.children[that.index] == undefined){
-                var currentSlide = that.conDOM.children[that.conDOMLens-1];
+                currentSlide = that.conDOM.children[that.conDOMLens-1];
             }else{
-                var currentSlide = that.conDOM.children[that.index];
+                currentSlide = that.conDOM.children[that.index];
             };    
             var imgDOM = currentSlide.getElementsByTagName('img')[0];
             if ( imgDOM.getAttribute(opts.sLoad) ){ 
@@ -235,7 +244,11 @@
                 context.timer = setInterval(function () {
                     context.index++; //自动轮播到下一张
                     Help.addTransition(context.conDOM,context.opts.speed);
-                    Help.setTranslateX(context.conDOM,-context.index * context.slideWidth); //定位
+                    if(context.effect == "curtain"){
+                        Help.setTranslateX(context.conDOM,-(context.index-1)*context.slideWidth*0.8-context.slideWidth*0.7);
+                    }else{
+                        Help.setTranslateX(context.conDOM,-context.index*context.slideWidth);
+                    }  
                 }, context.opts.duration*1000);
             };
             Help.transitionEnd(context.conDOM, function () {
@@ -247,7 +260,11 @@
                 };
                 
                 Help.removeTransition(context.conDOM); //清除过渡
-                Help.setTranslateX(context.conDOM, -context.index * context.slideWidth)
+                if(context.effect == "curtain"){
+                    Help.setTranslateX(context.conDOM,-(context.index-1)*context.slideWidth*0.8-context.slideWidth*0.7);
+                }else{
+                    Help.setTranslateX(context.conDOM,-context.index*context.slideWidth);
+                }  
                 
                 context.switchNav();
             })
@@ -261,20 +278,28 @@
             that.timer = setInterval(function(){
                 that.index++;
                 that.imgLazy();
-                Help.addTransition(that.conDOM,opts.speed);
-                Help.setTranslateX(that.conDOM,-that.index*that.slideWidth);
-            },opts.duration*1000)
+                Help.addTransition(that.conDOM,opts.speed);   
+                if(that.effect == "curtain"){
+                    Help.setTranslateX(that.conDOM,-(that.index-1)*that.slideWidth*0.8-that.slideWidth*0.7);
+                }else{
+                    Help.setTranslateX(that.conDOM,-that.index*that.slideWidth);
+                }
+            },opts.duration*1000);
            
             Help.transitionEnd(that.conDOM, function () {
                 var me = that;
-                if(me.effect == "leftLoop"){
+                if(me.effect == "leftLoop" || that.effect == "curtain"){
                     if (me.index > me.conDOMLens - 2) {
                         me.index = 1
                     } else if (me.index <= 0) {
                         me.index = me.conDOMLens - 2
                     };
                     Help.removeTransition(me.conDOM); //清除过渡
-                    Help.setTranslateX(me.conDOM, -me.index * me.slideWidth)
+                    if(that.effect == "curtain"){
+                        Help.setTranslateX(that.conDOM,-(that.index-1)*that.slideWidth*0.8-that.slideWidth*0.7);
+                    }else{
+                        Help.setTranslateX(that.conDOM,-that.index*that.slideWidth);
+                    }
                 } 
                 me.switchNav();
             })
@@ -288,7 +313,7 @@
                 item.className = "";
             });
             if (current == undefined) {
-                that.navDOM[that.index-1].classList.add(opts.curNavClassName)
+                // that.navDOM[that.index-1].classList.add(opts.curNavClassName)
             } else {
                 that.navDOM[current].classList.add(opts.curNavClassName)
             }
@@ -334,7 +359,11 @@
             };
             that.imgLazy();
             Help.addTransition(that.conDOM,opts.speed);
-            Help.setTranslateX(that.conDOM, -that.index * that.slideWidth);   
+            if(that.effect == "curtain"){
+                Help.setTranslateX(that.conDOM,-(that.index-1)*that.slideWidth*0.8-that.slideWidth*0.7);
+            }else{
+                Help.setTranslateX(that.conDOM,-that.index*that.slideWidth);
+            }   
             that.resetInterval(that);
         },    
         // 上一页 和 下一页
@@ -371,7 +400,13 @@
             that.distanceX = that.moveX - that.startX; //计算移动的距离
 
             Help.removeTransition(that.conDOM); //清除过渡
-            Help.setTranslateX(that.conDOM, -that.index * that.slideWidth + that.distanceX); //实时的定位
+           
+            if(that.effect == "curtain"){
+                Help.setTranslateX(that.conDOM,-(that.index-1)*that.slideWidth*0.8-that.slideWidth*0.7+ that.distanceX);
+            }else{
+                Help.setTranslateX(that.conDOM, -that.index * that.slideWidth + that.distanceX); //实时的定位
+            }   
+
             that.isMove = true; //证明滑动过
         },
         touchend: function (e) {
