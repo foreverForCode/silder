@@ -134,7 +134,7 @@
 
             that.conDOM = Help.$Q(opts.conCell, twCell)[0];
             if(that.effect == "leftLoop"){
-                that.conDOM.style.cssText = "width:" + conWidth + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;transform:translateX("+-that.slideWidth+"px)";
+                that.conDOM.style.cssText = "width:" + conWidth + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;transform:translateX("+(-that.slideWidth)+"px)";
             }
             
             [].slice.call(that.conDOM.children, 0).forEach(function (node) {
@@ -166,7 +166,9 @@
         init: function () {
             var that = this,
                 opts = that.opts;
-            // 模块开关
+            /**
+             * 模块开关
+             * */ 
 
             // 是否自动播放
             if (opts.isLoop) {
@@ -251,8 +253,7 @@
                     };
                     Help.removeTransition(me.conDOM); //清除过渡
                     Help.setTranslateX(me.conDOM, -me.index * me.slideWidth)
-                }
-                Help.removeTransition(me.conDOM); //清除过渡 
+                } 
                 me.switchNav();
             })
         },
