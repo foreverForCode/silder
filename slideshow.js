@@ -71,7 +71,7 @@
 
     var Slide = function (options) {
         var defaultOpts = {
-            mainCell: '.slider', // 主节点
+            mainCell: '', // 主节点
             conCell: '.bd ul', // 内容节点
             navCell: '.hd ul', // 导航节点
             pageCell: '.page', // 左右导航父节点
@@ -88,9 +88,8 @@
             timer: null, // 计时器
             duration: 3, // 间隔时间
             speed: 300, // 过渡函数执行时间
-            navDOMHTML: '', // 底部HTML自定义
-            sLoad: ''
-
+            navPage: '', // 底部HTML自定义
+            sLoad: '' // 图片懒加载
         };
         var that = this;
         this.opts = Help.extend(defaultOpts, options || {});
@@ -110,17 +109,17 @@
             that.pageStateDOM = Help.$Q(opts.pageStateCell, that.slideDOM)[0]; // 1/3
             that.index = that.opts.index; // index
             that.timer = that.opts.timer;
-            that.effect = opts.effect;   
+            that.effect = opts.effect;
             that.startX = 0;
             that.moveX = 0;
             that.distanceX = 0;
-            that.touchStart = !Help.IsPC() ? 'touchstart' : 'mousedown';
-            that.touchMove = !Help.IsPC() ? 'touchmove' : 'mousemove';
-            that.touchEnd = !Help.IsPC() ? 'touchend' : 'mouseup';
+            that.touchStart = !Help.IsPC() ? 'touchstart' : '';
+            that.touchMove = !Help.IsPC() ? 'touchmove' : '';
+            that.touchEnd = !Help.IsPC() ? 'touchend' : '';
             that.isMove = false;
-            if(that.effect == 'leftLoop'||that.effect == 'curtain'){
+            if (that.effect == 'leftLoop' || that.effect == 'curtain' || that.effect == "normal") {
                 that.renderWrap();
-            }else{
+            } else {
                 return false;
             }
         },
@@ -155,15 +154,15 @@
             var that = this,
                 opts = that.opts;
             // 处理 如果没有提供底部圆点，自动生成
-            if (!that.navDOM.length && !opts.navDOMHTML) {
+            if (!that.navDOM.length && !opts.navPage) {
                 var temp = "";
                 for (var i = 0; i < that.conDOMLens - 2; i++) {
                     temp += "<li></li>"
                 };
-            } else if (!that.navDOM.length && opts.navDOMHTML) {
+            } else if (!that.navDOM.length && opts.navPage) {
                 var temp = "";
                 for (var i = 0; i < that.conDOMLens - 2; i++) {
-                    temp += that.opts.navDOMHTML.replace('$', "")
+                    temp += that.opts.navPage.replace('$', "")
                 }
             }
             that.navDOM = Help.$Q(that.opts.navCell, that.slideDOM)[0]
@@ -200,7 +199,7 @@
                 that.imgLazy();
             };
             // 是否需要底部导航
-            if (opts.showNav || opts.navDOMHTML) {
+            if (opts.showNav || opts.navPage) {
                 that.clickNav();
             } else {
                 [].slice.call(that.navDOM, 0).forEach(function (node) {
@@ -251,13 +250,13 @@
             if (status == undefined) {
                 if (context.effect == "curtain") {
                     Help.setTranslateX(context.conDOM, -(context.index - 1) * context.slideWidth * 0.8 - context.slideWidth * 0.7);
-                } else if(context.effect == "leftLoop"){
+                } else if (context.effect == "leftLoop" || context.effect == "normal") {
                     Help.setTranslateX(context.conDOM, -context.index * context.slideWidth);
                 }
-            }else if(status == 'move'){
+            } else if (status == 'move') {
                 if (that.effect == "curtain") {
                     Help.setTranslateX(that.conDOM, -(that.index - 1) * that.slideWidth * 0.8 - that.slideWidth * 0.7 + that.distanceX);
-                } else if(context.effect == "leftLoop") {
+                } else if (context.effect == "leftLoop" || context.effect == "normal") {
                     Help.setTranslateX(that.conDOM, -that.index * that.slideWidth + that.distanceX); //实时的定位
                 }
             }
@@ -285,15 +284,17 @@
                 }, context.opts.duration * 1000);
             };
             Help.transitionEnd(context.conDOM, function () {
+                if (opts.effect == 'curtain' || opts.effect == 'leftLoop') {
+                    if (context.index > context.conDOMLens - 2) {
+                        context.index = 1
+                    } else if (context.index <= 0) {
+                        context.index = context.conDOMLens - 2
+                    };
+                }
 
-                if (context.index > context.conDOMLens - 2) {
-                    context.index = 1
-                } else if (context.index <= 0) {
-                    context.index = context.conDOMLens - 2
-                };
                 Help.removeTransition(context.conDOM); //清除过渡
                 that.moveDistance(that);
-                context.switchNav();
+                // context.switchNav();
             })
         },
 
@@ -331,7 +332,7 @@
                 item.className = "";
             });
             if (current == undefined) {
-                that.navDOM[that.index-1].classList.add(opts.curNavClassName)
+                that.navDOM[that.index - 1].classList.add(opts.curNavClassName)
             } else {
                 that.navDOM[current].classList.add(opts.curNavClassName)
             }
@@ -339,9 +340,14 @@
             that.imgLazy();
         },
         pageStateEvent: function () {
-            var that = this;
+            var that = this,opts = that.opts;
             if (that.pageStateDOM) {
-                that.pageStateDOM.innerHTML = "<span>" + (that.index) + "/" + (that.conDOMLens - 2) + "</span>"
+                if(opts.effect == "leftLoop" || opts.effect == "curtain"){
+                    that.pageStateDOM.innerHTML = "<span>" + (that.index) + "/" + (that.conDOMLens - 2) + "</span>"
+                }else if(opts.effect == "normal"){
+                    that.pageStateDOM.innerHTML = "<span>" + (that.index) + "/" + (that.conDOMLens) + "</span>"
+                }
+                
             }
         },
         // 导航点击事件
@@ -414,11 +420,12 @@
                 opts = that.opts;
             clearInterval(that.timer);
             var point = !Help.IsPC() ? e.touches[0] : e;
+            console.log(point,"pc")
             that.moveX = point.clientX; //滑动时候的X
             that.distanceX = that.moveX - that.startX; //计算移动的距离
             console.log(that.distanceX)
             Help.removeTransition(that.conDOM); //清除过渡
-            that.moveDistance(that,'move');
+            that.moveDistance(that, 'move');
             that.isMove = true; //证明滑动过
         },
         touchend: function (e) {
