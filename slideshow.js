@@ -72,13 +72,13 @@
     var Slide = function (options) {
         var defaultOpts = {
             mainCell: '', // 主节点
-            conCell: '.bd ul', // 内容节点
-            navCell: '.hd ul', // 导航节点
-            pageCell: '.page', // 左右导航父节点
-            prev: '.prev', // 上一页《
-            next: '.next', // 下一页》
+            conCell: '', // 内容节点
+            navCell: '', // 导航节点
+            pageCell: '', // 左右导航父节点
+            prev: '', // 上一页《
+            next: '', // 下一页》
             curNavClassName: 'on', // 当前导航类名
-            pageStateCell: '.pageState', // 1/2
+            pageStateCell: '', // 1/2
             isLoop: true, // 是否循环播放
             showNav: false, // 是否显示显示导航栏
             isTouch: false, // 是否可以拖动
@@ -88,7 +88,6 @@
             timer: null, // 计时器
             duration: 3, // 间隔时间
             speed: 300, // 过渡函数执行时间
-            navPage: '', // 底部HTML自定义
             sLoad: '' // 图片懒加载
         };
         var that = this;
@@ -154,21 +153,27 @@
             var that = this,
                 opts = that.opts;
             // 处理 如果没有提供底部圆点，自动生成
-            if (!that.navDOM.length && !opts.navPage) {
-                var temp = "";
-                for (var i = 0; i < that.conDOMLens - 2; i++) {
-                    temp += "<li></li>"
-                };
-            } else if (!that.navDOM.length && opts.navPage) {
-                var temp = "";
-                for (var i = 0; i < that.conDOMLens - 2; i++) {
-                    temp += that.opts.navPage.replace('$', "")
+
+            if (opts.showNav) {
+                if (opts.showNav == true) {
+                    var temp = "";
+                    for (var i = 0; i < that.conDOMLens - 2; i++) {
+                        temp += "<li></li>"
+                    };
+                } else {
+                    var temp = "";
+                    for (var i = 0; i < that.conDOMLens - 2; i++) {
+                        temp += that.opts.showNav.replace('$', "")
+                    }
                 }
+                that.navDOM = Help.$Q(that.opts.navCell, that.slideDOM)[0]
+                that.navDOM.innerHTML = temp;
+                that.navDOM = that.navDOM.children;
+                that.navDOM[0].classList.add(opts.curNavClassName);
+                that.clickNav();
             }
-            that.navDOM = Help.$Q(that.opts.navCell, that.slideDOM)[0]
-            that.navDOM.innerHTML = temp;
-            that.navDOM = that.navDOM.children;
-            that.navDOM[0].classList.add(opts.curNavClassName);
+
+
         },
         renderWrap: function () {
             var that = this,
@@ -198,14 +203,7 @@
                 that.index++;
                 that.imgLazy();
             };
-            // 是否需要底部导航
-            if (opts.showNav || opts.navPage) {
-                that.clickNav();
-            } else {
-                [].slice.call(that.navDOM, 0).forEach(function (node) {
-                    node.style.display = "none";
-                })
-            };
+
             // 是否有左右导航
             if (opts.hasHandle) {
                 that.pageNav();
@@ -291,10 +289,9 @@
                         context.index = context.conDOMLens - 2
                     };
                 }
-
                 Help.removeTransition(context.conDOM); //清除过渡
                 that.moveDistance(that);
-                // context.switchNav();
+                context.switchNav();
             })
         },
 
@@ -328,6 +325,11 @@
         switchNav: function (current) {
             var that = this,
                 opts = that.opts;
+            that.pageStateEvent();
+            that.imgLazy();
+            if (!opts.showNav) {
+                return;
+            }
             [].slice.call(that.navDOM, 0).forEach(function (item) {
                 item.className = "";
             });
@@ -336,18 +338,18 @@
             } else {
                 that.navDOM[current].classList.add(opts.curNavClassName)
             }
-            that.pageStateEvent();
-            that.imgLazy();
+
         },
         pageStateEvent: function () {
-            var that = this,opts = that.opts;
+            var that = this,
+                opts = that.opts;
             if (that.pageStateDOM) {
-                if(opts.effect == "leftLoop" || opts.effect == "curtain"){
+                if (opts.effect == "leftLoop" || opts.effect == "curtain") {
                     that.pageStateDOM.innerHTML = "<span>" + (that.index) + "/" + (that.conDOMLens - 2) + "</span>"
-                }else if(opts.effect == "normal"){
+                } else if (opts.effect == "normal") {
                     that.pageStateDOM.innerHTML = "<span>" + (that.index) + "/" + (that.conDOMLens) + "</span>"
                 }
-                
+
             }
         },
         // 导航点击事件
@@ -420,7 +422,7 @@
                 opts = that.opts;
             clearInterval(that.timer);
             var point = !Help.IsPC() ? e.touches[0] : e;
-            console.log(point,"pc")
+            console.log(point, "pc")
             that.moveX = point.clientX; //滑动时候的X
             that.distanceX = that.moveX - that.startX; //计算移动的距离
             console.log(that.distanceX)

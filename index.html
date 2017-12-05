@@ -13,10 +13,10 @@
         <div class="slider" id="sliderA">
             <div class="bd">
                 <ul>
-                    <li><a href="#"><img src="./images/11.jpg"></a></li>
-                    <li><a href="#"><img src="./images/12.jpg"></a></li>
-                    <li><a href="#"><img src="./images/13.jpg"></a></li>
-                    <li><a href="#"><img src="./images/14.jpg"></a></li> 
+                    <li><a href="#"><img _src="./images/11.jpg"></a></li>
+                    <li><a href="#"><img _src="./images/12.jpg"></a></li>
+                    <li><a href="#"><img _src="./images/13.jpg"></a></li>
+                    <li><a href="#"><img _src="./images/14.jpg"></a></li>
                 </ul>
             </div>
             <div class="hd">
@@ -25,7 +25,7 @@
                     <li></li>
                     <li></li>
                     <li></li> -->
-                    
+
                 </ul>
             </div>
             <div class="page">
@@ -47,7 +47,7 @@
                     <li><a href="#"><img src="./images/11.jpg"></a></li>
                     <li><a href="#"><img src="./images/12.jpg"></a></li>
                     <li><a href="#"><img src="./images/13.jpg"></a></li>
-                    <li><a href="#"><img src="./images/14.jpg"></a></li> 
+                    <li><a href="#"><img src="./images/14.jpg"></a></li>
                 </ul>
             </div>
             <div class="hd">
@@ -56,7 +56,7 @@
                     <li></li>
                     <li></li>
                     <li></li> -->
-                    
+
                 </ul>
             </div>
             <div class="page">
@@ -79,24 +79,34 @@
         window.onload = function () {
             slide({
                 mainCell: '#sliderA',
-                showNav:true,        // 显示底部导航
-                hasHandle:true,      // 是否有左右导航
-                isTouch:true,       // 是否可以拖拽
-                isLoop:true,         // 是否自动播放
-                navPage:'<li>$</li>',
-                sLoad:'_src',
-                effect:'leftLoop'  //curtain
+                conCell: '.bd ul', // 内容节点
+                navCell: '.hd ul', // 导航节点
+                pageCell: '.page', // 左右导航父节点
+                prev: '.prev', // 上一页《
+                next: '.next', // 下一页》
+                pageStateCell: '.pageState', // 1/2
+                showNav: false, // 显示底部导航
+                hasHandle: true, // 是否有左右导航
+                isTouch: true, // 是否可以拖拽
+                isLoop: true, // 是否自动播放
+                sLoad: '_src',
+                effect: 'leftLoop' //curtain
             })
 
             slide({
                 mainCell: '#sliderB',
-                showNav:true,        // 显示底部导航
-                hasHandle:false,      // 是否有左右导航
-                isTouch:true,       // 是否可以拖拽
-                isLoop:true,         // 是否自动播放
-                navPage:'<li>$</li>',
-                sLoad:'_src',
-                effect:'curtain'  //curtain
+                conCell: '.bd ul', // 内容节点
+                navCell: '.hd ul', // 导航节点
+                pageCell: '.page', // 左右导航父节点
+                prev: '.prev', // 上一页《
+                next: '.next', // 下一页》
+                pageStateCell: '.pageState', // 1/2
+                showNav: '<li>$</li>', // 显示底部导航
+                hasHandle: true, // 是否有左右导航
+                isTouch: true, // 是否可以拖拽
+                isLoop: true, // 是否自动播放
+                sLoad: '_src',
+                effect: 'curtain' //curtain
             })
         }
     </script>
