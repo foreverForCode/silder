@@ -1,7 +1,4 @@
-;
-(function (window) {
-
-
+;(function (window) {
     // 辅助对象
     var Help = {
         /*监听过渡结束事件*/
@@ -53,6 +50,21 @@
             dom.style.transform = "translateX(" + translatex + "px)";
             dom.style.webkitTransition = "translateX(" + translatex + "px)"
         },
+        // pc端验证，但效果不好
+        IsPC:function() {
+            var userAgentInfo = navigator.userAgent;
+            var Agents = ["Android", "iPhone",
+                        "SymbianOS", "Windows Phone",
+                        "iPad", "iPod"];
+            var flag = true;
+            for (var v = 0; v < Agents.length; v++) {
+                if (userAgentInfo.indexOf(Agents[v]) > 0) {
+                    flag = false;
+                    break;
+                }
+            }
+            return flag;
+        }
     }
 
     var Slide = function (options) {
@@ -78,7 +90,13 @@
             sLoad:''
                 
         };
+        var that = this;
         this.opts = Help.extend(defaultOpts, options || {});
+        // that.lock = false;
+        // // 如果屏幕尺寸变化，则重写加载
+        // window.addEventListener('resize',function(){
+        //     that.bindData();    
+        // },false);
         this.bindData();
 
     };
@@ -113,22 +131,30 @@
 
             that.distanceX = 0;
 
-            that.isMove = false;
+            that.touchStart =!Help.IsPC() ? 'touchstart' : 'mousedown';
 
+            that.touchMove =!Help.IsPC() ? 'touchmove' : 'mousemove';
+
+            that.touchEnd =!Help.IsPC() ? 'touchend' : 'mouseup';
+
+            that.isMove = false;
+            
+            
             that.renderWrap();
 
         },
+		
         renderWrap: function () {
             var that = this,
                 opts = that.opts;
-
+            
             if(that.effect == "leftLoop" || that.effect == "curtain"){
                 that.conDOMLens += 2;
 
 				that.conDOM.appendChild(that.conDOM.children[0].cloneNode(true));
                 that.conDOM.insertBefore(that.conDOM.children[that.conDOMLens -3].cloneNode(true),that.conDOM.children[0]);
             }
-
+            
             var conWidth = that.conDOMLens * that.slideWidth;
            
             var twCell = Help.wrap(that.conDOM, '<div class="tempWrap" style="overflow:hidden; position:relative;"></div>');
@@ -178,7 +204,7 @@
                 opts = that.opts;
             /**
              * 模块开关
-             * */ 
+             * */
 
             // 是否自动播放
             if (opts.isLoop) {
@@ -205,7 +231,7 @@
 
             // 是否可以拖动
             if (opts.isTouch) {
-                that.conDOM.addEventListener('touchstart', function (e) {
+                that.conDOM.addEventListener(that.touchStart, function (e) {
                     that.touchstart(e)
                 }, false);
             };
@@ -384,11 +410,12 @@
             var that = this,
                 opts = that.opts;
             clearInterval(that.timer);
-            that.startX = e.touches[0].clientX;
-            that.conDOM.addEventListener('touchmove', function (e) {
+            var point = !Help.IsPC() ? e.touches[0] : e;
+            that.startX = point.clientX;
+            that.conDOM.addEventListener(that.touchMove, function (e) {
                 that.touchmove(e)
             }, false);
-            window.addEventListener('touchend', function (e) {
+            window.addEventListener(that.touchEnd, function (e) {
                 that.touchend(e)
             }, false);
         },
@@ -396,7 +423,8 @@
             var that = this,
                 opts = that.opts;
             clearInterval(that.timer);
-            that.moveX = e.touches[0].clientX; //滑动时候的X
+            var point = !Help.IsPC() ? e.touches[0] : e;
+            that.moveX = point.clientX; //滑动时候的X
             that.distanceX = that.moveX - that.startX; //计算移动的距离
 
             Help.removeTransition(that.conDOM); //清除过渡
@@ -424,10 +452,10 @@
                 that.move();
             };
             that.resetInterval(that);
-            that.conDOM.removeEventListener('touchmove', function (e) {
+            that.conDOM.removeEventListener(that.touchMove, function (e) {
                 that.touchmove(e)
             }, false);
-            window.removeEventListener('touchend', function (e) {
+            window.removeEventListener(that.touchEnd, function (e) {
                 that.touchend(e)
             }, false);
         }
