@@ -37,6 +37,8 @@ ol,ul{
     width: 100%;
     position: relative;
 }
+
+/* 导航样式 */
 .slider .hd{
     width:100%;
     position: absolute;
@@ -63,7 +65,9 @@ ol,ul{
 .slider .hd ul li.on{
     background-color: #fff;
 }
-
+.slider .hd ul li.now{
+    background-color: #fff;
+}
 
 /* 上一页 和 下一页  */
 .slider .page{

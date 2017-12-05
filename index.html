@@ -13,10 +13,10 @@
         <div class="slider" id="sliderA">
             <div class="bd">
                 <ul>
-                    <li><a href="#"><img _src="./images/11.jpg"></a></li>
-                    <li><a href="#"><img _src="./images/12.jpg"></a></li>
-                    <li><a href="#"><img _src="./images/13.jpg"></a></li>
-                    <li><a href="#"><img _src="./images/14.jpg"></a></li>
+                    <li><a href="#"><img src="./images/11.jpg"></a></li>
+                    <li><a href="#"><img src="./images/12.jpg"></a></li>
+                    <li><a href="#"><img src="./images/13.jpg"></a></li>
+                    <li><a href="#"><img src="./images/14.jpg"></a></li>
                 </ul>
             </div>
             <div class="hd">
@@ -51,13 +51,12 @@
                 </ul>
             </div>
             <div class="hd">
-                <ul>
-                    <!-- <li class="on"></li>
-                    <li></li>
-                    <li></li>
-                    <li></li> -->
-
-                </ul>
+                <div>
+                    <ul></ul>
+                    <ul></ul>
+                    <ul></ul>
+                    <ul></ul>
+                </div>
             </div>
             <div class="page">
                 <p class="prev">
@@ -81,32 +80,33 @@
                 mainCell: '#sliderA',
                 conCell: '.bd ul', // 内容节点
                 navCell: '.hd ul', // 导航节点
-                pageCell: '.page', // 左右导航父节点
-                prev: '.prev', // 上一页《
-                next: '.next', // 下一页》
-                pageStateCell: '.pageState', // 1/2
+                // pageCell: '.page', // 左右导航父节点
+                // prev: '.prev', // 上一页《
+                // next: '.next', // 下一页》
+                // pageStateCell: '.pageState', // 1/2
                 showNav: false, // 显示底部导航
-                hasHandle: true, // 是否有左右导航
-                isTouch: true, // 是否可以拖拽
-                isLoop: true, // 是否自动播放
-                sLoad: '_src',
+                hasHandle: false, // 是否有左右导航
+                isTouch: false, // 是否可以拖拽
+                isLoop: false, // 是否自动播放
+                sLoad: '',
                 effect: 'leftLoop' //curtain
             })
 
             slide({
                 mainCell: '#sliderB',
                 conCell: '.bd ul', // 内容节点
-                navCell: '.hd ul', // 导航节点
+                navCell: '.hd div', // 导航节点
                 pageCell: '.page', // 左右导航父节点
                 prev: '.prev', // 上一页《
                 next: '.next', // 下一页》
                 pageStateCell: '.pageState', // 1/2
-                showNav: '<li>$</li>', // 显示底部导航
+                showNav: true, // 显示底部导航
                 hasHandle: true, // 是否有左右导航
                 isTouch: true, // 是否可以拖拽
                 isLoop: true, // 是否自动播放
-                sLoad: '_src',
-                effect: 'curtain' //curtain
+                sLoad: '',
+                effect: 'leftLoop', //curtain
+                curNavClassName: 'now',
             })
         }
     </script>

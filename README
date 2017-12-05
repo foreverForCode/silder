@@ -1,0 +1,114 @@
+
+## 焦点图 原生js 插件
+
+### 重要提示
+
+本插件只封装逻辑，没有对样式提供特别之处，这也是为了满足焦点图多元化，所以需要自己写样式，提供的demo有样式模板
+
+
+### mode
+
+可以实现leftLoop 和 turtain 两种 mode
+
+### 功能
+
+- 自动轮播
+- 导航栏
+- 左右导航
+- 循环加载
+- 图片懒加载（在trutain模式不兼容，推荐在leftLoop使用）
+- 提示页  eg: 1/4
+
+### 自定义参数
+```
+slide({
+        mainCell: '#sliderB',
+        conCell: '.bd ul', // 内容节点
+        navCell: '.hd ul', // 导航节点
+        pageCell: '.page', // 左右导航父节点
+        prev: '.prev', // 上一页《
+        next: '.next', // 下一页》
+        pageStateCell: '.pageState', // 1/2
+        showNav: '<li>$</li>', // 显示底部导航
+        hasHandle: true, // 是否有左右导航
+        isTouch: true, // 是否可以拖拽
+        isLoop: true, // 是否自动播放
+        sLoad: '',
+        effect: 'curtain' //curtain
+})
+```
+### 关于导航的特殊说明
+    说明 导航子节点的数量，必须和内容子节点的内容一致，不然会报错
+    如果 showNav 为 true，但是 内容区为空， <div class="hd"><ul></ul></div> 那么 conCell:'.hd ul',
+    这样会自动填充<li></li>,
+    如果 showNav 为 true，内容区手动添加了内容，<div class="hd"><div><ul></ul><ul></ul><ul></ul><ul></ul></div></div> 那么 conCell:'.hd div'
+### notice
+
+如果参数为false，那么对应的样式可以不写，但是conCell 和 navCell 和 mainCell 必须提供
+```
+slide({
+        mainCell: '#sliderA',
+        conCell: '.bd ul', // 内容节点
+        navCell: '.hd ul', // 导航节点
+        // pageCell: '.page', // 左右导航父节点
+        // prev: '.prev', // 上一页《
+        // next: '.next', // 下一页》
+        // pageStateCell: '.pageState', // 1/2
+        showNav: false, // 显示底部导航
+        hasHandle: false, // 是否有左右导航
+        isTouch: false, // 是否可以拖拽
+        isLoop: false, // 是否自动播放
+        sLoad: '',
+        effect: 'leftLoop' //curtain
+    })
+```
+
+### 必须的css样式
+
+```
+
+.layout{
+    width: 100%;
+    max-width: 750px;
+    min-width: 320px;
+    margin: 0 auto;
+    position: relative;
+}
+.slider{
+    width: 100%;
+    position: relative;
+}
+
+/* 导航样式 */
+.slider .hd{
+    width:100%;
+    position: absolute;
+    bottom:20px;
+}
+
+.slider .hd ul{
+    width:100%;
+    text-align: center;
+}
+.slider .hd ul li{
+    width: 6px;
+    height: 6px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 10px;
+}
+.slider .hd ul li:first-child{
+    margin-left: 0px;
+}
+
+/* 动态效果 */
+.slider .hd ul li.on{
+    background-color: #fff;
+}
+```
+
+
+### 后记
+维护: 李想
+联系: freewm@163.com

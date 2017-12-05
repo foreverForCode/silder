@@ -4,8 +4,6 @@
     var Help = {
         /*监听过渡结束事件*/
         transitionEnd: function (dom, callback) {
-            //1.给谁加事件
-            //2.事件触发后处理什么业务
             if (!dom || typeof dom != 'object') {
                 //没dom的时候或者不是一个对象的时候 程序停止
                 return false;
@@ -20,6 +18,9 @@
         // 获取节点
         $Q: function (select, context) {
             context = context || document;
+            if(!select){
+                return[] ;
+            }
             return context.querySelectorAll(select);
         },
         // 对象合并
@@ -46,7 +47,7 @@
             dom.style.transition = "none";
             dom.style.webkitTransition = "none"; /*做兼容*/
         },
-        // 定位translateX的值
+        // 移动函数
         setTranslateX: function (dom, translatex) {
             dom.style.transform = "translateX(" + translatex + "px)";
             dom.style.webkitTransition = "translateX(" + translatex + "px)"
@@ -104,7 +105,7 @@
             that.conDOM = Help.$Q(opts.conCell, that.slideDOM)[0]; // 内容节点父对象  
             that.conDOMLens = that.conDOM.children.length; // 内容节点的length
             that.navDOM = Help.$Q(opts.navCell, that.slideDOM)[0].children; // 导航节点 ---> []
-            that.pageDOM = Help.$Q(opts.pageCell, that.slideDOM)[0]; // 左右导航父对象
+            that.pageDOM = Help.$Q(opts.pageCell, that.slideDOM)[0]|| null; // 左右导航父对象
             that.pageStateDOM = Help.$Q(opts.pageStateCell, that.slideDOM)[0]; // 1/3
             that.index = that.opts.index; // index
             that.timer = that.opts.timer;
@@ -141,7 +142,7 @@
                 Help.$Q('img', node).forEach(function (item) {
                     if (that.effect == "curtain") {
                         item.style.width = that.slideWidth * 0.8 + "px";
-                    } else {
+                    } else if(that.effect == "leftLoop") {
                         item.style.width = that.slideWidth + "px";
                     }
 
@@ -153,27 +154,27 @@
             var that = this,
                 opts = that.opts;
             // 处理 如果没有提供底部圆点，自动生成
-
             if (opts.showNav) {
-                if (opts.showNav == true) {
+                if(that.navDOM.length == 0){
                     var temp = "";
-                    for (var i = 0; i < that.conDOMLens - 2; i++) {
-                        temp += "<li></li>"
-                    };
-                } else {
-                    var temp = "";
-                    for (var i = 0; i < that.conDOMLens - 2; i++) {
-                        temp += that.opts.showNav.replace('$', "")
+                    if(opts.showNav == true || opts.showNav == "true"){
+                        for (var i = 0; i < that.conDOMLens - 2; i++) {
+                            temp += "<li></li>"
+                        };
+                    }else{
+                        for (var i = 0; i < that.conDOMLens - 2; i++) {
+                            temp += that.opts.showNav.replace('$', "")
+                        }
                     }
-                }
-                that.navDOM = Help.$Q(that.opts.navCell, that.slideDOM)[0]
-                that.navDOM.innerHTML = temp;
-                that.navDOM = that.navDOM.children;
-                that.navDOM[0].classList.add(opts.curNavClassName);
-                that.clickNav();
+                    that.navDOM = Help.$Q(that.opts.navCell, that.slideDOM)[0]
+                    that.navDOM.innerHTML = temp;
+                    that.navDOM = that.navDOM.children;
+                    that.navDOM[0].classList.add(opts.curNavClassName);
+                    that.clickNav();
+                }else{
+                    that.navDOM[0].classList.add(opts.curNavClassName);
+                }   
             }
-
-
         },
         renderWrap: function () {
             var that = this,
@@ -208,7 +209,10 @@
             if (opts.hasHandle) {
                 that.pageNav();
             } else {
-                that.pageDOM.style.display = "none"
+                if(that.pageDOM){
+                    that.pageDOM.style.display = "none"
+                }
+                
             }
 
             // 是否可以拖动
@@ -230,16 +234,18 @@
             var that = this,
                 opts = that.opts,
                 currentSlide;
-            if (that.conDOM.children[that.index] == undefined) {
-                currentSlide = that.conDOM.children[that.conDOMLens - 1];
-            } else {
-                currentSlide = that.conDOM.children[that.index];
-            };
-            var imgDOM = currentSlide.getElementsByTagName('img')[0];
-            if (imgDOM.getAttribute(opts.sLoad)) {
-                imgDOM.setAttribute("src", imgDOM.getAttribute(opts.sLoad));
-                imgDOM.removeAttribute(opts.sLoad);
-            }
+            if(opts.sLoad){
+                if (that.conDOM.children[that.index] == undefined) {
+                    currentSlide = that.conDOM.children[that.conDOMLens - 1];
+                } else {
+                    currentSlide = that.conDOM.children[that.index];
+                };
+                var imgDOM = currentSlide.getElementsByTagName('img')[0];
+                if (imgDOM.getAttribute(opts.sLoad)) {
+                    imgDOM.setAttribute("src", imgDOM.getAttribute(opts.sLoad));
+                    imgDOM.removeAttribute(opts.sLoad);
+                }
+            }     
         },
         // 图片每次移动的距离  status 是为 touchmove准备的，因为touchmove移动需要添加初始值,这里可以扩展
         moveDistance: function (context, status) {
@@ -420,10 +426,8 @@
                 opts = that.opts;
             clearInterval(that.timer);
             var point = !Help.IsPC() ? e.touches[0] : e;
-            console.log(point, "pc")
             that.moveX = point.clientX; //滑动时候的X
             that.distanceX = that.moveX - that.startX; //计算移动的距离
-            console.log(that.distanceX)
             Help.removeTransition(that.conDOM); //清除过渡
             that.moveDistance(that, 'move');
             that.isMove = true; //证明滑动过
@@ -433,7 +437,6 @@
                 opts = that.opts;
             // 滑动超过 1/4 即为滑动有效，否则即为无效，则吸附回去
             if (that.isMove && Math.abs(that.distanceX) > that.slideWidth / 4) {
-                //5.当滑动超过了一定的距离  需要 跳到 下一张或者上一张  （滑动的方向）*/
                 if (that.distanceX > 0) { //上一张
                     that.move('sub');
                 } else { //下一张
