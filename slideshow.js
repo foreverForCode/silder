@@ -51,7 +51,7 @@
             dom.style.transform = "translateX(" + translatex + "px)";
             dom.style.webkitTransition = "translateX(" + translatex + "px)"
         },
-        // pc端验证，但效果不好
+        // pc端验证
         IsPC: function () {
             var userAgentInfo = navigator.userAgent;
             var Agents = ["Android", "iPhone",
@@ -83,7 +83,7 @@
             showNav: false, // 是否显示显示导航栏
             isTouch: false, // 是否可以拖动
             hasHandle: false, //是否需要左右导航,
-            effect: "curtain", // 特效模式        nomal leftLoop curtain(大幕)
+            effect: "leftLoop", // 特效模式        nomal leftLoop curtain(大幕)
             index: 0, // 下标 
             timer: null, // 计时器
             duration: 3, // 间隔时间
@@ -102,56 +102,42 @@
         bindData: function () {
             var that = this,
                 opts = that.opts;
-
             that.slideDOM = Help.$Q(opts.mainCell)[0]; // 主节点DOM
-
-            that.conDOM = Help.$Q(opts.conCell, that.slideDOM)[0]; // 内容节点父对象 ---> [] 
-
+            that.conDOM = Help.$Q(opts.conCell, that.slideDOM)[0]; // 内容节点父对象  
             that.conDOMLens = that.conDOM.children.length; // 内容节点的length
-
             that.navDOM = Help.$Q(opts.navCell, that.slideDOM)[0].children; // 导航节点 ---> []
-
             that.pageDOM = Help.$Q(opts.pageCell, that.slideDOM)[0]; // 左右导航父对象
-
             that.pageStateDOM = Help.$Q(opts.pageStateCell, that.slideDOM)[0]; // 1/3
-
             that.index = that.opts.index; // index
-
             that.timer = that.opts.timer;
-
-            that.effect = opts.effect;
-
+            that.effect = opts.effect;   
             that.startX = 0;
-
             that.moveX = 0;
-
             that.distanceX = 0;
-
             that.touchStart = !Help.IsPC() ? 'touchstart' : 'mousedown';
-
             that.touchMove = !Help.IsPC() ? 'touchmove' : 'mousemove';
-
             that.touchEnd = !Help.IsPC() ? 'touchend' : 'mouseup';
-
             that.isMove = false;
-
-            that.renderWrap();
+            if(that.effect == 'leftLoop'||that.effect == 'curtain'){
+                that.renderWrap();
+            }else{
+                return false;
+            }
         },
-
+        // 主体内容添加滚动样式，以后添加其他模式可以修改这里
         conReset: function () {
             var that = this,
                 opts = that.opts;
             that.slideWidth = that.slideDOM.offsetWidth; // 获取主节点的宽度
             var conWidth = that.conDOMLens * that.slideWidth;
             var twCell = Help.wrap(that.conDOM, '<div class="tempWrap" style="overflow:hidden; position:relative;"></div>');
-
             that.conDOM = Help.$Q(opts.conCell, twCell)[0];
             if (that.effect == "leftLoop") {
                 that.conDOM.style.cssText = "width:" + conWidth + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;transform:translateX(" + (-that.slideWidth) + "px)";
             } else if (that.effect == "curtain") {
                 that.conDOM.style.cssText = "width:" + conWidth * 0.8 + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;transform:translateX(" + (-that.slideWidth * 0.7) + "px)";
             }
-
+            // 每屏的切换
             [].slice.call(that.conDOM.children, 0).forEach(function (node) {
                 node.style.cssText = "display:table-cell;vertical-align:top;width:" + that.slideWidth + "px";
                 Help.$Q('img', node).forEach(function (item) {
@@ -164,6 +150,7 @@
                 })
             });
         },
+        // 导航区判断是否需要加载，如果没有是否可以自动生成
         navReset: function () {
             var that = this,
                 opts = that.opts;
@@ -192,7 +179,6 @@
                 that.conDOM.appendChild(that.conDOM.children[0].cloneNode(true));
                 that.conDOM.insertBefore(that.conDOM.children[that.conDOMLens - 3].cloneNode(true), that.conDOM.children[0]);
             }
-
             that.conReset();
             that.navReset()
             that.init();
@@ -214,7 +200,7 @@
                 that.imgLazy();
             };
             // 是否需要底部导航
-            if (opts.showNav) {
+            if (opts.showNav || opts.navDOMHTML) {
                 that.clickNav();
             } else {
                 [].slice.call(that.navDOM, 0).forEach(function (node) {
@@ -241,7 +227,6 @@
                 that.conReset();
                 that.resetInterval(that);
             }, false)
-
         },
         // 图片懒加载
         imgLazy: function () {
@@ -259,24 +244,23 @@
                 imgDOM.removeAttribute(opts.sLoad);
             }
         },
-        // 图片每次移动的距离  status 是为 touchmove准备的
-        diffX: function (context, status) {
+        // 图片每次移动的距离  status 是为 touchmove准备的，因为touchmove移动需要添加初始值,这里可以扩展
+        moveDistance: function (context, status) {
             var that = context,
                 opts = that.opts;
             if (status == undefined) {
                 if (context.effect == "curtain") {
                     Help.setTranslateX(context.conDOM, -(context.index - 1) * context.slideWidth * 0.8 - context.slideWidth * 0.7);
-                } else {
+                } else if(context.effect == "leftLoop"){
                     Help.setTranslateX(context.conDOM, -context.index * context.slideWidth);
                 }
             }else if(status == 'move'){
                 if (that.effect == "curtain") {
                     Help.setTranslateX(that.conDOM, -(that.index - 1) * that.slideWidth * 0.8 - that.slideWidth * 0.7 + that.distanceX);
-                } else {
+                } else if(context.effect == "leftLoop") {
                     Help.setTranslateX(that.conDOM, -that.index * that.slideWidth + that.distanceX); //实时的定位
                 }
             }
-
         },
         // 重置参数
         reset: function () {
@@ -297,7 +281,7 @@
                 context.timer = setInterval(function () {
                     context.index++; //自动轮播到下一张
                     Help.addTransition(context.conDOM, context.opts.speed);
-                    that.diffX(that);
+                    that.moveDistance(that);
                 }, context.opts.duration * 1000);
             };
             Help.transitionEnd(context.conDOM, function () {
@@ -307,11 +291,8 @@
                 } else if (context.index <= 0) {
                     context.index = context.conDOMLens - 2
                 };
-
                 Help.removeTransition(context.conDOM); //清除过渡
-
-                that.diffX(that);
-
+                that.moveDistance(that);
                 context.switchNav();
             })
         },
@@ -325,9 +306,8 @@
                 that.index++;
                 that.imgLazy();
                 Help.addTransition(that.conDOM, opts.speed);
-                that.diffX(that);
+                that.moveDistance(that);
             }, opts.duration * 1000);
-
             Help.transitionEnd(that.conDOM, function () {
                 var me = that;
                 if (me.effect == "leftLoop" || that.effect == "curtain") {
@@ -337,7 +317,7 @@
                         me.index = me.conDOMLens - 2
                     };
                     Help.removeTransition(me.conDOM); //清除过渡
-                    that.diffX(that);
+                    that.moveDistance(that);
                 }
                 me.switchNav();
             })
@@ -351,7 +331,7 @@
                 item.className = "";
             });
             if (current == undefined) {
-                // that.navDOM[that.index-1].classList.add(opts.curNavClassName)
+                that.navDOM[that.index-1].classList.add(opts.curNavClassName)
             } else {
                 that.navDOM[current].classList.add(opts.curNavClassName)
             }
@@ -399,7 +379,7 @@
             };
             that.imgLazy();
             Help.addTransition(that.conDOM, opts.speed);
-            that.diffX(that);
+            that.moveDistance(that);
             that.resetInterval(that);
         },
         // 上一页 和 下一页
@@ -436,8 +416,9 @@
             var point = !Help.IsPC() ? e.touches[0] : e;
             that.moveX = point.clientX; //滑动时候的X
             that.distanceX = that.moveX - that.startX; //计算移动的距离
+            console.log(that.distanceX)
             Help.removeTransition(that.conDOM); //清除过渡
-            that.diffX(that,'move');
+            that.moveDistance(that,'move');
             that.isMove = true; //证明滑动过
         },
         touchend: function (e) {
