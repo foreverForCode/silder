@@ -92,11 +92,6 @@
         };
         var that = this;
         this.opts = Help.extend(defaultOpts, options || {});
-        // that.lock = false;
-        // // 如果屏幕尺寸变化，则重写加载
-        // window.addEventListener('resize',function(){
-        //     that.bindData();    
-        // },false);
         this.bindData();
 
     };
@@ -106,8 +101,6 @@
             var that = this,opts = that.opts;
 
             that.slideDOM = Help.$Q(opts.mainCell)[0]; // 主节点DOM
-
-            that.slideWidth = that.slideDOM.offsetWidth; // 获取主节点的宽度
 
             that.conDOM = Help.$Q(opts.conCell, that.slideDOM)[0]; // 内容节点父对象 ---> [] 
 
@@ -138,27 +131,16 @@
             that.touchEnd =!Help.IsPC() ? 'touchend' : 'mouseup';
 
             that.isMove = false;
-            
-            
+
             that.renderWrap();
-
         },
-		
-        renderWrap: function () {
-            var that = this,
-                opts = that.opts;
-            
-            if(that.effect == "leftLoop" || that.effect == "curtain"){
-                that.conDOMLens += 2;
-
-				that.conDOM.appendChild(that.conDOM.children[0].cloneNode(true));
-                that.conDOM.insertBefore(that.conDOM.children[that.conDOMLens -3].cloneNode(true),that.conDOM.children[0]);
-            }
-            
+        
+        conReset:function(){
+            var that = this,opts = that.opts;
+            that.slideWidth = that.slideDOM.offsetWidth; // 获取主节点的宽度
             var conWidth = that.conDOMLens * that.slideWidth;
-           
             var twCell = Help.wrap(that.conDOM, '<div class="tempWrap" style="overflow:hidden; position:relative;"></div>');
-
+            
             that.conDOM = Help.$Q(opts.conCell, twCell)[0];
             if(that.effect == "leftLoop"){
                 that.conDOM.style.cssText = "width:" + conWidth + "px;" + "position:relative;overflow:hidden;padding:0;margin:0;transform:translateX("+(-that.slideWidth)+"px)";
@@ -177,10 +159,11 @@
                    
                 })
             });
-
-           
-            // 处理 如果没有提供底部圆点，自动生成
-            if(!that.navDOM.length && !opts.navDOMHTML){
+        },
+        navReset:function(){
+            var that = this,opts = that.opts;
+             // 处理 如果没有提供底部圆点，自动生成
+             if(!that.navDOM.length && !opts.navDOMHTML){
                 var temp = "";
                 for(var i = 0;i<that.conDOMLens-2;i++){
                     temp += "<li></li>"
@@ -195,6 +178,21 @@
             that.navDOM.innerHTML = temp;
             that.navDOM = that.navDOM.children;
             that.navDOM[0].classList.add(opts.curNavClassName);
+        },
+        renderWrap: function () {
+            var that = this,
+                opts = that.opts;
+            
+            if(that.effect == "leftLoop" || that.effect == "curtain"){
+                that.conDOMLens += 2;
+
+				that.conDOM.appendChild(that.conDOM.children[0].cloneNode(true));
+                that.conDOM.insertBefore(that.conDOM.children[that.conDOMLens -3].cloneNode(true),that.conDOM.children[0]);
+            }
+               
+            that.conReset();
+
+            that.navReset()  
             
             that.init();
         },
@@ -236,7 +234,12 @@
                 }, false);
             };
             that.pageStateEvent();
-            
+            window.addEventListener('resize',function(){
+                clearInterval(that.timer);
+                that.index = 0;
+                that.conReset();
+                that.resetInterval(that);
+            },false)
             
         },
         // 图片懒加载
