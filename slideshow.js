@@ -116,7 +116,7 @@
             that.touchMove = !Help.IsPC() ? 'touchmove' : '';
             that.touchEnd = !Help.IsPC() ? 'touchend' : '';
             that.isMove = false;
-            if (that.effect == 'leftLoop' || that.effect == 'curtain' || that.effect == "normal") {
+            if (that.effect == 'leftLoop' || that.effect == 'curtain') {
                 that.renderWrap();
             } else {
                 return false;
@@ -248,13 +248,13 @@
             if (status == undefined) {
                 if (context.effect == "curtain") {
                     Help.setTranslateX(context.conDOM, -(context.index - 1) * context.slideWidth * 0.8 - context.slideWidth * 0.7);
-                } else if (context.effect == "leftLoop" || context.effect == "normal") {
+                } else if (context.effect == "leftLoop") {
                     Help.setTranslateX(context.conDOM, -context.index * context.slideWidth);
                 }
             } else if (status == 'move') {
                 if (that.effect == "curtain") {
                     Help.setTranslateX(that.conDOM, -(that.index - 1) * that.slideWidth * 0.8 - that.slideWidth * 0.7 + that.distanceX);
-                } else if (context.effect == "leftLoop" || context.effect == "normal") {
+                } else if (context.effect == "leftLoop") {
                     Help.setTranslateX(that.conDOM, -that.index * that.slideWidth + that.distanceX); //实时的定位
                 }
             }
@@ -346,9 +346,7 @@
             if (that.pageStateDOM) {
                 if (opts.effect == "leftLoop" || opts.effect == "curtain") {
                     that.pageStateDOM.innerHTML = "<span>" + (that.index) + "/" + (that.conDOMLens - 2) + "</span>"
-                } else if (opts.effect == "normal") {
-                    that.pageStateDOM.innerHTML = "<span>" + (that.index) + "/" + (that.conDOMLens) + "</span>"
-                }
+                } 
 
             }
         },
